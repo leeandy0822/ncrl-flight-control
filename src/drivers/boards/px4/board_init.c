@@ -17,6 +17,7 @@
 #include "pwm.h"
 #include "uart.h"
 #include "ncp5623c.h"
+#include "vins_mono.h"
 #include "board_porting.h"
 
 void board_init(void)
@@ -40,8 +41,9 @@ void board_init(void)
 #endif
 
 #if (SELECT_NAVIGATION_DEVICE2 == NAV_DEV2_USE_VINS_MONO)
-	//uart6_init(115200);
-	//vins_mono_init(UAV_DEFAULT_ID);
+	uart7_init(115200);
+	vins_mono_init(UAV_DEFAULT_ID);
+
 #endif
 
 	timer12_init();
