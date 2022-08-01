@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "uart.h": "c",
+        "vins_mono.h": "c"
+    }
+}
