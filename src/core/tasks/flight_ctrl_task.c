@@ -30,7 +30,7 @@
 #include "ist8310.h"
 #include "esc_calibration.h"
 #include "compass.h"
-#include "vins_mono.h"
+#include "ncrl_link.h"
 #include "ins.h"
 #include "ins_sensor_sync.h"
 #include "led.h"
@@ -40,7 +40,7 @@
 #define FLIGHT_CTL_PRESCALER_RELOAD 10
 
 extern optitrack_t optitrack;
-extern vins_mono_t vins_mono;
+extern ncrl_link_t ncrl_link;
 
 SemaphoreHandle_t flight_ctrl_semphr;
 
@@ -144,12 +144,10 @@ void task_flight_ctrl(void *param)
 		optitrack_update();
 #endif
 
-#if (SELECT_NAVIGATION_DEVICE2 == NAV_DEV2_USE_VINS_MONO)
-		// vins_mono_camera_trigger_20hz();
-		// send imu data
-		vins_mono_send_imu_200hz();
-		// recieve data
-		vins_mono_update();
+#if (SELECT_NAVIGATION_DEVICE2 == NAV_DEV2_USE_NCRL_LINK)
+
+		ncrl_link_send_fsm_200hz();
+		ncrl_link_update();
 #endif
 
 		sbus_rc_read(&rc);

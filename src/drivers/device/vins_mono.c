@@ -252,9 +252,6 @@ void send_vins_mono_imu_msg(void)
 	get_accel_lpf(accel);
 	get_gyro_lpf(gyro);
 
-
-	float temp = vins_mono.pos_enu[1];
-
 	char msg_buf[VINS_MONO_IMU_MSG_SIZE] = {0};
 	int msg_pos = 0;
 
@@ -284,7 +281,7 @@ void send_vins_mono_imu_msg(void)
 	msg_buf[1] = generate_vins_mono_checksum_byte((uint8_t *)&msg_buf[3],
 	                VINS_MONO_IMU_MSG_SIZE - 3);
 
-	vins_mono_puts(msg_buf, VINS_MONO_IMU_MSG_SIZE);
+	//vins_mono_puts(msg_buf, VINS_MONO_IMU_MSG_SIZE);
 }
 
 void vins_mono_send_imu_200hz(void)

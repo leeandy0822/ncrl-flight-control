@@ -26,6 +26,7 @@ SRC+=$(PROJ_ROOT)/drivers/device/ncp5623c.c \
 	$(PROJ_ROOT)/drivers/device/ist8310.c \
 	$(PROJ_ROOT)/drivers/device/ublox_m8n.c \
 	$(PROJ_ROOT)/drivers/device/vins_mono.c \
+	$(PROJ_ROOT)/drivers/device/ncrl_link.c \
 	$(PROJ_ROOT)/drivers/device/led.c \
 	$(PROJ_ROOT)/drivers/device/lidar_lite.c
 

@@ -9,22 +9,17 @@
 #include "isr.h"
 #include "sbus_radio.h"
 #include "optitrack.h"
-#include "vins_mono.h"
 #include "ublox_m8n.h"
 #include "proj_config.h"
 #include "uart.h"
+#include "ncrl_link.h"
 
 #define UART2_QUEUE_SIZE 100
 #define UART3_QUEUE_SIZE 500
 
 /* TODO: vins-mono uart tx driver is not implemented!
- * place `vins_mono_isr_handler(c);` in uart1 or uart7 isr handler */
+ * place `ncrl_link_isr_handler(c);` in uart1 or uart7 isr handler */
 
-/* TODO: vins-mono uart rx driver is not implemented! */
-void vins_mono_puts(char *s, int size)
-{
-	//XXX: this is a dummy function
-}
 
 SemaphoreHandle_t uart2_tx_semphr;
 SemaphoreHandle_t uart3_tx_semphr;
@@ -587,6 +582,6 @@ void UART7_IRQHandler(void)
 	if(USART_GetITStatus(UART7, USART_IT_RXNE) == SET) {
 		c = USART_ReceiveData(UART7);
 		UART7->SR;
-		vins_mono_isr_handler(c);
+		ncrl_link_isr_handler(c);
 	}
 }
