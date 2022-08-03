@@ -8,6 +8,7 @@
 typedef struct {
 	uint8_t id;
 
+	
 	/* position [m] */
 	float pos_enu[3];
 

@@ -62,7 +62,7 @@ void ncp5623c_led_toggle(bool red_toggle, bool green_toggle, bool blue_toggle)
 }
 
 
-#if (USE_TCA == 0)
+#if(USE_TCA == 0)
 void ncp5623c_write(float red, float green, float blue)
 {
 	
@@ -80,13 +80,20 @@ void ncp5623c_write(float red, float green, float blue)
 
 
 }
+#else
+void ncp5623c_write(float red, float green, float blue)
+{
+	float timeout = NCP5623C_I2C_TIMEOUT;
 
+<<<<<<< HEAD
 #else
 
 void ncp5623c_write(float red, float green, float blue)
 {
 	float timeout = NCP5623C_I2C_TIMEOUT;
 
+=======
+>>>>>>> a1cad463ef73e08a7d899f8c2c94692882272264
 	i2c_start(I2C2, 0x55<<1|0x00, I2C_Direction_Transmitter, timeout);
 	i2c_write(I2C2, 0x81 , timeout);
 	i2c_write(I2C2, ((uint8_t)((float)0x0f * blue / 100.0f) & 0x0f), timeout);
@@ -98,9 +105,13 @@ void ncp5623c_write(float red, float green, float blue)
 	i2c_write(I2C2, 0x03, timeout);
 	i2c_stop(I2C2);
 }
+<<<<<<< HEAD
 
 #endif
 
+=======
+#endif
+>>>>>>> a1cad463ef73e08a7d899f8c2c94692882272264
 void ncp5623c_driver_task(void *param)
 {
 	while(1) {

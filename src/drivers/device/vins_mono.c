@@ -17,7 +17,8 @@
 
 #define VINS_MONO_IMU_MSG_SIZE 27
 #define VINS_MONO_CHECKSUM_INIT_VAL 19
-#define VINS_MONO_QUEUE_SIZE (30 * 10) //~400 packets
+
+#define VINS_MONO_QUEUE_SIZE (44 * 10) //~400 packets
 
 typedef struct {
 	char c;
@@ -88,8 +89,8 @@ void vins_mono_update(void)
 {
 	vins_mono_buf_c_t recept_c;
 	while(xQueueReceive(vins_mono_queue, &recept_c, 0) == pdTRUE) {
-		uint8_t c = recept_c.c;
 
+		uint8_t c = recept_c.c;
 		vins_mono_buf_push(c);
 		if(c == '+' && vins_mono.buf[0] == '@') {
 			/* decode vins_mono message */
@@ -107,7 +108,7 @@ int vins_mono_serial_decoder(uint8_t *buf)
 	uint8_t checksum = generate_vins_mono_checksum_byte(&buf[3], VINS_MONO_SERIAL_MSG_SIZE - 4);
 	int recv_id = buf[2];
 	if(checksum != recv_checksum || vins_mono.id != recv_id) {
-		return 1; //error detected
+		return 1; //error detected		
 	}
 
 	vins_mono.time_now = get_sys_time_ms();
@@ -128,6 +129,7 @@ int vins_mono_serial_decoder(uint8_t *buf)
 	memcpy(&q_enu[1], &buf[31], sizeof(float));
 	memcpy(&q_enu[2], &buf[35], sizeof(float));
 	memcpy(&q_enu[3], &buf[39], sizeof(float));
+
 	vins_mono.q[0] =  q_enu[0];
 	vins_mono.q[1] =  q_enu[2];
 	vins_mono.q[2] =  q_enu[1];
@@ -261,11 +263,11 @@ void send_vins_mono_imu_msg(void)
 	msg_pos += sizeof(uint8_t);
 
 	/* pack payloads */
-	memcpy(msg_buf + msg_pos, &accel[0], sizeof(float));
+	memcpy(msg_buf + msg_pos, &vins_mono.pos_enu[0], sizeof(float));
 	msg_pos += sizeof(float);
-	memcpy(msg_buf + msg_pos, &accel[1], sizeof(float));
+	memcpy(msg_buf + msg_pos, &vins_mono.pos_enu[1], sizeof(float));
 	msg_pos += sizeof(float);
-	memcpy(msg_buf + msg_pos, &accel[2], sizeof(float));
+	memcpy(msg_buf + msg_pos, &vins_mono.pos_enu[2], sizeof(float));
 	msg_pos += sizeof(float);
 	memcpy(msg_buf + msg_pos, &gyro[0], sizeof(float));
 	msg_pos += sizeof(float);
@@ -280,7 +282,7 @@ void send_vins_mono_imu_msg(void)
 	msg_buf[1] = generate_vins_mono_checksum_byte((uint8_t *)&msg_buf[3],
 	                VINS_MONO_IMU_MSG_SIZE - 3);
 
-	vins_mono_puts(msg_buf, VINS_MONO_IMU_MSG_SIZE);
+	//vins_mono_puts(msg_buf, VINS_MONO_IMU_MSG_SIZE);
 }
 
 void vins_mono_send_imu_200hz(void)

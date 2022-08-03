@@ -17,6 +17,7 @@
 #include "pwm.h"
 #include "uart.h"
 #include "ncp5623c.h"
+#include "ncrl_link.h"
 #include "vins_mono.h"
 #include "board_porting.h"
 
@@ -40,10 +41,16 @@ void board_init(void)
 	optitrack_init(UAV_DEFAULT_ID); //setup tracker id for this MAV
 #endif
 
+<<<<<<< HEAD
 #if (SELECT_NAVIGATION_DEVICE2 == NAV_DEV2_USE_VINS_MONO)
 	uart7_init(115200);
 	vins_mono_init(UAV_DEFAULT_ID);
 
+=======
+#if (SELECT_NAVIGATION_DEVICE2 == NAV_DEV2_USE_NCRL_LINK)
+	uart7_init(115200);
+	ncrl_link_init(UAV_DEFAULT_ID);
+>>>>>>> a1cad463ef73e08a7d899f8c2c94692882272264
 #endif
 
 	timer12_init();

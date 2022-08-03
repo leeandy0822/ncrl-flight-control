@@ -29,6 +29,5 @@ void uart7_puts(char *s, int size);
 bool uart2_getc(char *c, long sleep_ticks);
 bool uart3_getc(char *c, long sleep_ticks);
 
-void vins_mono_puts(char *s, int size); //XXX: remove me after the porting is completed
 
 #endif
