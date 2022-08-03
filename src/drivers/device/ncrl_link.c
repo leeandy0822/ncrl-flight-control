@@ -15,7 +15,7 @@
 #include "board_porting.h"
 #include "quaternion.h"
 
-#define FSM_MSG_SIZE 21 
+#define NCRL_LINK_MSG_SIZE 21 
 #define NCRL_LINK_CHECKSUM_INIT_VAL 19
 #define NCRL_LINK_QUEUE_SIZE (22 * 10) //~400 packets
 #define NCRL_LINK_SERIAL_MSG_SIZE 22
@@ -116,10 +116,10 @@ int ncrl_link_serial_decoder(uint8_t *buf)
 	/* decode position (enu frame) */
 	memcpy(&ncrl_link.mode, &buf[3], sizeof(char));
 	memcpy(&ncrl_link.aux_info, &buf[4], sizeof(float));
-	memcpy(&ncrl_link.data1, &buf[5], sizeof(float));
-	memcpy(&ncrl_link.data2, &buf[9], sizeof(float));
-	memcpy(&ncrl_link.data3, &buf[13], sizeof(float));
-	memcpy(&ncrl_link.data4, &buf[17], sizeof(float));
+	memcpy(&ncrl_link.data[0], &buf[5], sizeof(float));
+	memcpy(&ncrl_link.data[1], &buf[9], sizeof(float));
+	memcpy(&ncrl_link.data[2], &buf[13], sizeof(float));
+	memcpy(&ncrl_link.data[3], &buf[17], sizeof(float));
 
 
 	/* calculate update rate */
@@ -132,26 +132,37 @@ int ncrl_link_serial_decoder(uint8_t *buf)
 	return 0;
 }
 
+char ncrl_link_get_mode(void)
+{
+	return ncrl_link.mode;
+}
+
+float ncrl_link_get_aux_info(void)
+{
+	return ncrl_link.aux_info;
+}
+
+
 void ncrl_link_get_position_enu(float *pos)
 {
-	pos[0] = ncrl_link.pos_enu[0];
-	pos[1] = ncrl_link.pos_enu[1];
-	pos[2] = ncrl_link.pos_enu[2];
+	pos[0] = ncrl_link.data[0];
+	pos[1] = ncrl_link.data[1];
+	pos[2] = ncrl_link.data[2];
 }
 
 float ncrl_link_get_position_enu_x(void)
 {
-	return ncrl_link.pos_enu[0];
+	return ncrl_link.data[0];
 }
 
 float ncrl_link_get_position_enu_y(void)
 {
-	return ncrl_link.pos_enu[1];
+	return ncrl_link.data[1];
 }
 
 float ncrl_link_get_position_enu_z(void)
 {
-	return ncrl_link.pos_enu[2];
+	return ncrl_link.data[2];
 }
 
 void ncrl_link_get_velocity_enu(float *vel)
@@ -178,24 +189,24 @@ float ncrl_link_get_velocity_enu_z(void)
 
 void ncrl_link_get_position_ned(float *pos)
 {
-	pos[0] =  ncrl_link.pos_enu[1];
-	pos[1] =  ncrl_link.pos_enu[0];
-	pos[2] = -ncrl_link.pos_enu[2];
+	pos[0] =  ncrl_link.data[1];
+	pos[1] =  ncrl_link.data[0];
+	pos[2] = -ncrl_link.data[2];
 }
 
 float ncrl_link_get_position_ned_x(void)
 {
-	return ncrl_link.pos_enu[1];
+	return ncrl_link.data[1];
 }
 
 float ncrl_link_get_position_ned_y(void)
 {
-	return ncrl_link.pos_enu[0];
+	return ncrl_link.data[0];
 }
 
 float ncrl_link_get_position_ned_z(void)
 {
-	return -ncrl_link.pos_enu[2];
+	return -ncrl_link.data[2];
 }
 
 void ncrl_link_get_velocity_ned(float *vel)
@@ -228,16 +239,17 @@ void ncrl_link_get_quaternion(float *q)
 	q[3] = ncrl_link.q[3];
 }
 
+
 void send_ncrl_link_fsm_msg(void)
 {
-	/*+------------+----------+---------+---------+---------+--------+--------+--------+----------+
-	 *| start byte | checksum | mode | aux_info | data1 | data2 | data3 | data4 | end byte |
-	 *+------------+----------+---------+---------+---------+--------+--------+--------+----------+*/
+	/*+------------+----------+------+----------+---------+---------+---------+---------+----------+
+	 *| start byte | checksum | mode | aux_info | data[0] | data[1] | data[2] | data[3] | end byte |
+	 *+------------+----------+------+----------+---------+---------+---------+---------+----------+*/
 
 	float gyro[3] = {0.0f};
 	get_gyro_lpf(gyro);
 
-	char msg_buf[FSM_MSG_SIZE] = {0};
+	char msg_buf[NCRL_LINK_MSG_SIZE] = {0};
 	int msg_pos = 0;
 
 	/* reserve 2 for start byte and checksum byte as header */
@@ -251,22 +263,22 @@ void send_ncrl_link_fsm_msg(void)
 	msg_pos += sizeof(char);
 	memcpy(msg_buf + msg_pos, &ncrl_link.aux_info, sizeof(char));
 	msg_pos += sizeof(char);
-	memcpy(msg_buf + msg_pos, &ncrl_link.data1, sizeof(float));
+	memcpy(msg_buf + msg_pos, &ncrl_link.data[0], sizeof(float));
 	msg_pos += sizeof(float);
-	memcpy(msg_buf + msg_pos, &ncrl_link.data2, sizeof(float));
+	memcpy(msg_buf + msg_pos, &ncrl_link.data[1], sizeof(float));
 	msg_pos += sizeof(float);
-	memcpy(msg_buf + msg_pos, &ncrl_link.data3, sizeof(float));
+	memcpy(msg_buf + msg_pos, &ncrl_link.data[2], sizeof(float));
 	msg_pos += sizeof(float);
-	memcpy(msg_buf + msg_pos, &ncrl_link.data4, sizeof(float));
+	memcpy(msg_buf + msg_pos, &ncrl_link.data[3], sizeof(float));
 	msg_pos += sizeof(float);
 
 	msg_buf[msg_pos] = '+'; //end byte
 	msg_pos += sizeof(uint8_t);
 
 	msg_buf[1] = generate_ncrl_link_checksum_byte((uint8_t *)&msg_buf[3],
-	                FSM_MSG_SIZE - 3);
+	                NCRL_LINK_MSG_SIZE - 3);
 
-	ncrl_link_puts(msg_buf, FSM_MSG_SIZE);
+	ncrl_link_puts(msg_buf, NCRL_LINK_MSG_SIZE);
 }
 
 void ncrl_link_send_fsm_200hz(void)
