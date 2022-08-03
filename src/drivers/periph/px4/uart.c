@@ -244,13 +244,12 @@ void uart6_init(int baudrate)
 
 /*
  * <uart7>
- * usage:
- * tx:
- * rx:
+ * usage: ncrl link
+ * tx: mode AUX pos 
+ * rx: mode AUX pos 
  */
 void uart7_init(int baudrate)
 {
-
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOE, ENABLE);
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA1, ENABLE);
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_UART7, ENABLE);
@@ -285,7 +284,6 @@ void uart7_init(int baudrate)
 		.NVIC_IRQChannelCmd = ENABLE
 	};
 	NVIC_Init(&NVIC_InitStruct);
-
 	USART_ITConfig(UART7, USART_IT_RXNE, ENABLE);
 }
 
@@ -423,10 +421,10 @@ void uart6_puts(char *s, int size)
 
 void uart7_puts(char *s, int size)
 {
-#if 0
+#if 1
 	static bool uart7_tx_busy = false;
 
-	if(uart7_tx_busy == true && DMA_GetFlagStatus(DMA1_Stream1, DMA_FLAG_TCIF5) == RESET) {
+	if(uart7_tx_busy == true && DMA_GetFlagStatus(DMA1_Stream1, DMA_FLAG_TCIF1) == RESET) {
 		return;
 	} else {
 		uart7_tx_busy = false;
@@ -436,7 +434,7 @@ void uart7_puts(char *s, int size)
 	memcpy(uart7_buf, s, size);
 
 	//uart7 tx: dma1 channel5 stream1
-	DMA_ClearFlag(DMA1_Stream1, DMA_FLAG_TCIF7);
+	DMA_ClearFlag(DMA1_Stream1, DMA_FLAG_TCIF1);
 
 	DMA_InitTypeDef DMA_InitStructure = {
 		.DMA_BufferSize = (uint32_t)size,
@@ -464,6 +462,7 @@ void uart7_puts(char *s, int size)
 #else
 	usart_puts(UART7, s, size);
 #endif
+
 }
 
 bool uart2_getc(char *c, long sleep_ticks)
