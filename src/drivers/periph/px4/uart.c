@@ -416,6 +416,13 @@ void uart7_puts(char *s, int size)
 {
 #if 1
 
+	static bool uart7_tx_busy = false;
+
+	if(uart7_tx_busy == true && DMA_GetFlagStatus(DMA1_Stream1, DMA_FLAG_TCIF1) == RESET) {
+		return;
+	} else {
+		uart7_tx_busy = false;
+	}
 	static uint8_t uart7_buf[100];
 	memcpy(uart7_buf, s, size);
 
@@ -443,7 +450,8 @@ void uart7_puts(char *s, int size)
 	//send data from memory to uart data register
 	DMA_Cmd(DMA1_Stream1, ENABLE);
 	USART_DMACmd(UART7, USART_DMAReq_Tx, ENABLE);
-
+	uart7_tx_busy = true;
+	
 #else
 	usart_puts(UART7, s, size);
 #endif

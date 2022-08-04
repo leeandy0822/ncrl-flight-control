@@ -20,6 +20,7 @@ typedef struct {
 	bool motor_lock;
 	bool sensor_error;
 	bool navigation_on;
+	bool ncrl_link_on;
 } rgb_service_t;
 
 void rgb_led_service_init(void);
@@ -30,5 +31,6 @@ void set_rgb_led_service_sensor_error_flag(bool state);
 void set_rgb_led_service_navigation_on_flag(bool state);
 void set_rgb_led_calibration_mode_flag(bool state);
 void set_rgb_led_rc_not_ready_flag(bool state);
+void set_rgb_led_ncrl_link_flag(bool state);
 
 #endif

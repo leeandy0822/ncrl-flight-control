@@ -151,6 +151,11 @@ void autopilot_assign_zero_acc_feedforward(void)
 	autopilot.ctrl_target.acc_feedforward[2] = 0.0f;
 }
 
+void autopilot_assign_ncrl_link_command(char mode ,char aux_info){
+	autopilot.ncrl_link_mode = mode;
+	autopilot.ncrl_link_aux_info = aux_info;
+}
+
 void autopilot_set_mode(int new_mode)
 {
 	autopilot.mode = new_mode;
@@ -225,11 +230,6 @@ void autopilot_get_accel_feedforward(float *accel_ff)
 	accel_ff[0] = autopilot.ctrl_target.acc_feedforward[0];
 	accel_ff[1] = autopilot.ctrl_target.acc_feedforward[1];
 	accel_ff[2] = autopilot.ctrl_target.acc_feedforward[2];
-}
-
-void autopilot_assign_ncrl_link_command(char mode ,char aux_info){
-	autopilot.ncrl_link_mode = mode;
-	autopilot.ncrl_link_aux_info = aux_info;
 }
 
 void autopilot_hovering_position_trimming_handler(radio_t *rc)

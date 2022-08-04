@@ -28,8 +28,8 @@ typedef struct {
 	char mode;
 	char aux_info;
 
-	/* data[0] ~ data[2] : target position in enu [m] */
-	float data[3];
+	/* data[0] ~ data[3] : target position in enu [m] */
+	float data[4];
 
 } ncrl_link_t ;
 

@@ -15,12 +15,10 @@ extern autopilot_t autopilot;
 
 void ncrl_link_command_handler(char mode_, char aux_info, float* curr_pos_enu){
     
-    send_ncrl_link_fsm_msg();
     char mode = mode_;
     switch (mode){
         case '0' : /* takeoff */
 		    autopilot_takeoff_handler();
-            //send_ncrl_link_fsm_msg();
             break;
 
         case '1' : /* goto */

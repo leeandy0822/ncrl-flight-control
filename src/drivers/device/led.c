@@ -52,12 +52,13 @@ void config_rgb_mode(void)
 		return;
 	}
 
+
 	if(rgb_service.motor_lock == true) {
 		/* blue on (disarmed) */
 		rgb_service.red_on = false;
 		rgb_service.blue_on = true;
 
-		/* light red (navigation on) / dark red (navigation off) */
+		/* light blue (navigation on) / blue (navigation off) */
 		rgb_service.green_on = (rgb_service.navigation_on) ? true : false;
 
 		rgb_service.blink_enabled = false;
@@ -65,18 +66,27 @@ void config_rgb_mode(void)
 
 		return;
 	} else {
-		/* red on (armed) */
-		rgb_service.red_on = true;
-		rgb_service.blue_on = false;
 
-		/* light red (navigation on) / dark red (navigation off) */
-		rgb_service.green_on = (rgb_service.navigation_on) ? true : false;
-
-		rgb_service.blink_enabled = false;
-		rgb_service.blink_wait_time = 0.0f;
+		/* ncrl_link mode*/
+		if (rgb_service.ncrl_link_on){
+			rgb_service.red_on = false;
+			rgb_service.blue_on = false;
+			rgb_service.green_on = true;
+			rgb_service.blink_enabled = false;
+			rgb_service.blink_wait_time = 0.0f;
+		}else{
+			/* yellow (navigation on) / red (navigation off) */
+			rgb_service.red_on = true;
+			rgb_service.blue_on = false;
+			rgb_service.green_on = (rgb_service.navigation_on) ? true : false;
+			rgb_service.blink_enabled = false;
+			rgb_service.blink_wait_time = 0.0f;
+		}
 
 		return;
 	}
+
+
 }
 
 void set_rgb_led_service_motor_lock_flag(bool state)
@@ -106,6 +116,13 @@ void set_rgb_led_calibration_mode_flag(bool state)
 void set_rgb_led_rc_not_ready_flag(bool state)
 {
 	rgb_service.rc_not_ready = state;
+	config_rgb_mode();
+}
+
+
+void set_rgb_led_ncrl_link_flag(bool state)
+{
+	rgb_service.ncrl_link_on = state;
 	config_rgb_mode();
 }
 
