@@ -497,30 +497,40 @@ void rc_mode_handler_geometry_ctrl(radio_t *rc)
 	static bool auto_flight_mode_last = false;
 
 	multirotor_rc_special_function_handler(rc);
-
+	// armed
 	if(rc->safety == true) {
+		// safe and auto mode
 		if(rc->auto_flight == true) {
 			autopilot_set_mode(AUTOPILOT_HOVERING_MODE);
+
+			//set desired position to current position
+			float curr_pos[3] = {0.0f};
+			get_enu_position(curr_pos);
+			autopilot_assign_pos_target(curr_pos[0], curr_pos[1], curr_pos[2]);
+			autopilot_assign_zero_vel_target();      //set desired velocity to zero
+			autopilot_assign_zero_acc_feedforward(); //set acceleration feedforward to zero
+			reset_geometry_tracking_error_integral();
+		
+		// safe but not auto mode
 		} else {
-			autopilot_set_mode(AUTOPILOT_MANUAL_FLIGHT_MODE);
+			// start ncrl_link service
+			if(rc->aux1_mode == 2){
+				// ncrl_link service
+
+
+
+			}else{
+				autopilot_set_mode(AUTOPILOT_MANUAL_FLIGHT_MODE);
+				autopilot_mission_reset();
+				autopilot_assign_pos_target(0.0f, 0.0f, 0.0f);
+				autopilot_assign_zero_vel_target();
+				autopilot_assign_zero_acc_feedforward();
+				reset_geometry_tracking_error_integral();
+			}
+
 		}
-	}
-
-	//if mode switched to auto-flight
-	if(rc->auto_flight == true && auto_flight_mode_last != true) {
-		autopilot_set_mode(AUTOPILOT_HOVERING_MODE);
-
-		//set desired position to current position
-		float curr_pos[3] = {0.0f};
-		get_enu_position(curr_pos);
-		autopilot_assign_pos_target(curr_pos[0], curr_pos[1], curr_pos[2]);
-		autopilot_assign_zero_vel_target();      //set desired velocity to zero
-		autopilot_assign_zero_acc_feedforward(); //set acceleration feedforward to zero
-
-		reset_geometry_tracking_error_integral();
-	}
-
-	if(rc->auto_flight == false) {
+	// not safe -> manual
+	}else{
 		autopilot_set_mode(AUTOPILOT_MANUAL_FLIGHT_MODE);
 		autopilot_mission_reset();
 
@@ -531,7 +541,33 @@ void rc_mode_handler_geometry_ctrl(radio_t *rc)
 		reset_geometry_tracking_error_integral();
 	}
 
-	auto_flight_mode_last = rc->auto_flight;
+	// //if mode switched to auto-flight
+	// if(rc->auto_flight == true && auto_flight_mode_last != true) {
+	// 	autopilot_set_mode(AUTOPILOT_HOVERING_MODE);
+
+	// 	//set desired position to current position
+	// 	float curr_pos[3] = {0.0f};
+	// 	get_enu_position(curr_pos);
+	// 	autopilot_assign_pos_target(curr_pos[0], curr_pos[1], curr_pos[2]);
+	// 	autopilot_assign_zero_vel_target();      //set desired velocity to zero
+	// 	autopilot_assign_zero_acc_feedforward(); //set acceleration feedforward to zero
+
+	// 	reset_geometry_tracking_error_integral();
+	// }
+
+	// if(rc->auto_flight == false) {
+	// 	autopilot_set_mode(AUTOPILOT_MANUAL_FLIGHT_MODE);
+	// 	autopilot_mission_reset();
+
+	// 	autopilot_assign_pos_target(0.0f, 0.0f, 0.0f);
+	// 	autopilot_assign_zero_vel_target();
+	// 	autopilot_assign_zero_acc_feedforward();
+
+	// 	reset_geometry_tracking_error_integral();
+	// }
+
+	
+	// auto_flight_mode_last = rc->auto_flight;
 }
 
 void multirotor_geometry_control(radio_t *rc)

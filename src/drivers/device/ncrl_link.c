@@ -15,7 +15,7 @@
 #include "board_porting.h"
 #include "quaternion.h"
 
-#define FSM_MSG_SIZE 21 
+#define NCRL_LINK_MSG_SIZE 21 
 #define NCRL_LINK_CHECKSUM_INIT_VAL 19
 #define NCRL_LINK_QUEUE_SIZE (22 * 10) //~400 packets
 #define NCRL_LINK_SERIAL_MSG_SIZE 22
@@ -237,7 +237,7 @@ void send_ncrl_link_fsm_msg(void)
 	float gyro[3] = {0.0f};
 	get_gyro_lpf(gyro);
 
-	char msg_buf[FSM_MSG_SIZE] = {0};
+	char msg_buf[NCRL_LINK_MSG_SIZE] = {0};
 	int msg_pos = 0;
 
 	/* reserve 2 for start byte and checksum byte as header */
@@ -264,9 +264,9 @@ void send_ncrl_link_fsm_msg(void)
 	msg_pos += sizeof(uint8_t);
 
 	msg_buf[1] = generate_ncrl_link_checksum_byte((uint8_t *)&msg_buf[3],
-	                FSM_MSG_SIZE - 3);
+	                NCRL_LINK_MSG_SIZE - 3);
 
-	ncrl_link_puts(msg_buf, FSM_MSG_SIZE);
+	ncrl_link_puts(msg_buf, NCRL_LINK_MSG_SIZE);
 }
 
 void ncrl_link_send_fsm_200hz(void)

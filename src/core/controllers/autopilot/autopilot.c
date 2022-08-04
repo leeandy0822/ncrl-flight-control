@@ -14,7 +14,7 @@
 #include "board_porting.h"
 #include "system_state.h"
 #include "sbus_radio.h"
-
+#include "ncrl_link.h"
 autopilot_t autopilot;
 
 bool check_motor_lock_condition(bool condition)

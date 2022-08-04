@@ -36,7 +36,7 @@
 #include "led.h"
 #include "board_porting.h"
 #include "system_state.h"
-
+#include "ncrl_link.h"
 #define FLIGHT_CTL_PRESCALER_RELOAD 10
 
 extern optitrack_t optitrack;
@@ -45,6 +45,7 @@ extern ncrl_link_t ncrl_link;
 SemaphoreHandle_t flight_ctrl_semphr;
 
 radio_t rc;
+ncrl_link_t ncrl_link;
 
 void flight_ctrl_semaphore_handler(void)
 {

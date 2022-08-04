@@ -30,12 +30,6 @@ SemaphoreHandle_t uart7_tx_semphr;
 QueueHandle_t uart2_rx_queue;
 QueueHandle_t uart3_rx_queue;
 
-/*
- * <uart7>
- * usage:
- * tx:
- * rx:
- */
 void uart1_init(int baudrate)
 {
 	//XXX: reserved, not implemented yet
@@ -418,21 +412,15 @@ void uart6_puts(char *s, int size)
 
 }
 
-/*
- * <uart7>
- * usage: ncrl_link
- * tx: gpio_pin_e7 (dma1 channel5 stream1)
- * rx: gpio_pin_e8 (dma1 channel5 stream3)
- */
 void uart7_puts(char *s, int size)
 {
-	static bool uart7_tx_busy = false;
+	// static bool uart7_tx_busy = false;
 
-	if(uart7_tx_busy == true && DMA_GetFlagStatus(DMA1_Stream1, DMA_FLAG_TCIF1) == RESET) {
-		return;
-	} else {
-		uart7_tx_busy = false;
-	}
+	// if(uart7_tx_busy == true && DMA_GetFlagStatus(DMA1_Stream1, DMA_FLAG_TCIF1) == RESET) {
+	// 	return;
+	// } else {
+	// 	uart7_tx_busy = false;
+	// }
 
 	static uint8_t uart7_buf[100];
 	memcpy(uart7_buf, s, size);
@@ -462,7 +450,7 @@ void uart7_puts(char *s, int size)
 	DMA_Cmd(DMA1_Stream1, ENABLE);
 	USART_DMACmd(UART7, USART_DMAReq_Tx, ENABLE);
 
-	uart7_tx_busy = true;
+	// uart7_tx_busy = true;
 }
 
 bool uart2_getc(char *c, long sleep_ticks)
