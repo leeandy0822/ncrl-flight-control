@@ -72,7 +72,9 @@ float ncrl_link_get_velocity_ned_z(void);
 
 void ncrl_link_get_quaternion(float *q);
 char ncrl_link_get_mode(void);
-float ncrl_link_get_aux_info(void);
+char ncrl_link_get_aux_info(void);
+
+void ncrl_link_test_function(float );
 
 /* vins-mono debug messages */
 // void send_ncrl_link_position_debug_message(debug_msg_t *payload);

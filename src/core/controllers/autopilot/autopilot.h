@@ -25,7 +25,9 @@ enum {
 	/* auto-landing mode */
 	AUTOPILOT_LANDING_MODE,
 	/* motor locked mode */
-	AUTOPILOT_MOTOR_LOCKED_MODE
+	AUTOPILOT_MOTOR_LOCKED_MODE,
+	/* ncrl link command mode */
+	NCRL_LINK_COMMAND_MODE
 } AUTOPILOT_MODE;
 
 enum {
@@ -134,6 +136,10 @@ typedef struct {
 	int traj_num;   //total trajectory number
 	bool z_traj;
 	bool yaw_traj;
+
+	/* ncrl link command */
+	char ncrl_link_mode;
+	char ncrl_link_aux_info;
 } autopilot_t;
 
 bool check_motor_lock_condition(bool condition);
@@ -175,10 +181,15 @@ float autopilot_get_vel_setpoint_x(void);
 float autopilot_get_vel_setpoint_y(void);
 float autopilot_get_vel_setpoint_z(void);
 void autopilot_get_accel_feedforward(float *accel_ff);
+void autopilot_assign_goto_target(float x, float y, float z);
 
 void autopilot_guidance_handler(radio_t *rc, float *curr_pos_enu, float *curr_vel_enu);
 
 void debug_print_waypoint_list(void);
 void debug_print_waypoint_status(void);
+
+void autopilot_assign_ncrl_link_command(char mode ,char aux_info);
+
+
 
 #endif
