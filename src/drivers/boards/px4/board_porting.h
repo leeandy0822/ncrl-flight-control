@@ -20,8 +20,8 @@
 
 #define debug_link_puts uart2_puts
 #define debug_link_getc uart2_getc
-
 #define ncrl_link_puts  uart7_puts
+
 
 #define gps_puts uart4_puts
 

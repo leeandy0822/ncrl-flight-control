@@ -240,9 +240,9 @@ void uart6_init(int baudrate)
 
 /*
  * <uart7>
- * usage: ncrl_link
- * tx: gpio_pin_e7 (dma1 channel5 stream1)
- * rx: gpio_pin_e8 (dma1 channel5 stream3)
+ * usage: ncrl link
+ * tx: mode AUX pos 
+ * rx: mode AUX pos 
  */
 void uart7_init(int baudrate)
 {
@@ -414,18 +414,12 @@ void uart6_puts(char *s, int size)
 
 void uart7_puts(char *s, int size)
 {
-	// static bool uart7_tx_busy = false;
-
-	// if(uart7_tx_busy == true && DMA_GetFlagStatus(DMA1_Stream1, DMA_FLAG_TCIF1) == RESET) {
-	// 	return;
-	// } else {
-	// 	uart7_tx_busy = false;
-	// }
+#if 1
 
 	static uint8_t uart7_buf[100];
 	memcpy(uart7_buf, s, size);
 
-	//uart6 tx: dma1 channel5 stream1
+	//uart7 tx: dma1 channel5 stream1
 	DMA_ClearFlag(DMA1_Stream1, DMA_FLAG_TCIF1);
 
 	DMA_InitTypeDef DMA_InitStructure = {
@@ -450,7 +444,10 @@ void uart7_puts(char *s, int size)
 	DMA_Cmd(DMA1_Stream1, ENABLE);
 	USART_DMACmd(UART7, USART_DMAReq_Tx, ENABLE);
 
-	// uart7_tx_busy = true;
+#else
+	usart_puts(UART7, s, size);
+#endif
+
 }
 
 bool uart2_getc(char *c, long sleep_ticks)

@@ -8,7 +8,6 @@
 typedef struct {
 	uint8_t id;
 
-	
 	/* position [m] */
 	float pos_enu[3];
 
@@ -24,15 +23,15 @@ typedef struct {
 
 	volatile int buf_pos;
 	uint8_t buf[NCRL_LINK_SERIAL_MSG_SIZE];
+
 	bool vel_ready;
 	char mode;
 	char aux_info;
-	float data1;
-	float data2;
-	float data3;
-	float data4;
-} ncrl_link_t ;
 
+	/* data[0] ~ data[2] : target position in enu [m] */
+	float data[3];
+
+} ncrl_link_t ;
 
 void ncrl_link_init(int id);
 
@@ -72,6 +71,8 @@ float ncrl_link_get_velocity_ned_y(void);
 float ncrl_link_get_velocity_ned_z(void);
 
 void ncrl_link_get_quaternion(float *q);
+char ncrl_link_get_mode(void);
+float ncrl_link_get_aux_info(void);
 
 /* vins-mono debug messages */
 // void send_ncrl_link_position_debug_message(debug_msg_t *payload);

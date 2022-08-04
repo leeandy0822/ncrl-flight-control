@@ -41,6 +41,7 @@ void board_init(void)
 	optitrack_init(UAV_DEFAULT_ID); //setup tracker id for this MAV
 #endif
 
+
 #if (SELECT_NAVIGATION_DEVICE2 == NAV_DEV2_USE_NCRL_LINK)
 	uart7_init(115200);
 	ncrl_link_init(UAV_DEFAULT_ID);
