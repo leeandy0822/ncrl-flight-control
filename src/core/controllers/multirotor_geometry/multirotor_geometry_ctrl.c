@@ -495,12 +495,11 @@ void mr_geometry_ctrl_thrust_allocation(float *moment, float total_force)
 
 void rc_mode_handler_geometry_ctrl(radio_t *rc)
 {
-	static bool auto_flight_mode_last = false;
 
 	multirotor_rc_special_function_handler(rc);
 
 	// armed
-	if(rc->safety == true) {
+	if(rc->safety == false) {
 
 		// auto mode
 		if(rc->auto_flight == true) {
@@ -520,11 +519,15 @@ void rc_mode_handler_geometry_ctrl(radio_t *rc)
 			// ncrl link mode 
 			if(rc->aux1_mode == 2){
 
-				// ncrl_link service
+				autopilot_set_mode(NCRL_LINK_COMMAND_MODE);
+
+				// get ncrl link data 
 				char mode = ncrl_link_get_mode();
-				float aux_info = ncrl_link_get_aux_info();
+				char aux_info = ncrl_link_get_aux_info();
 				float target_pos[3] = {0.0f};
 				ncrl_link_get_position_ned(target_pos);
+				autopilot_assign_goto_target(target_pos[0], target_pos[1], target_pos[2]);
+				autopilot_assign_ncrl_link_command(mode,aux_info);
 
 			}else{
 

@@ -137,11 +137,14 @@ char ncrl_link_get_mode(void)
 	return ncrl_link.mode;
 }
 
-float ncrl_link_get_aux_info(void)
+char ncrl_link_get_aux_info(void)
 {
 	return ncrl_link.aux_info;
 }
 
+void ncrl_link_test_function(float test ){
+	ncrl_link.data[0] = test;	
+}
 
 void ncrl_link_get_position_enu(float *pos)
 {
@@ -245,7 +248,7 @@ void send_ncrl_link_fsm_msg(void)
 	/*+------------+----------+------+----------+---------+---------+---------+---------+----------+
 	 *| start byte | checksum | mode | aux_info | data[0] | data[1] | data[2] | data[3] | end byte |
 	 *+------------+----------+------+----------+---------+---------+---------+---------+----------+*/
-
+	float test = 3.0;
 	float gyro[3] = {0.0f};
 	get_gyro_lpf(gyro);
 
@@ -263,13 +266,13 @@ void send_ncrl_link_fsm_msg(void)
 	msg_pos += sizeof(char);
 	memcpy(msg_buf + msg_pos, &ncrl_link.aux_info, sizeof(char));
 	msg_pos += sizeof(char);
-	memcpy(msg_buf + msg_pos, &ncrl_link.data[0], sizeof(float));
+	memcpy(msg_buf + msg_pos, &test, sizeof(float));
 	msg_pos += sizeof(float);
-	memcpy(msg_buf + msg_pos, &ncrl_link.data[1], sizeof(float));
+	memcpy(msg_buf + msg_pos, &test, sizeof(float));
 	msg_pos += sizeof(float);
-	memcpy(msg_buf + msg_pos, &ncrl_link.data[2], sizeof(float));
+	memcpy(msg_buf + msg_pos, &test, sizeof(float));
 	msg_pos += sizeof(float);
-	memcpy(msg_buf + msg_pos, &ncrl_link.data[3], sizeof(float));
+	memcpy(msg_buf + msg_pos, &test, sizeof(float));
 	msg_pos += sizeof(float);
 
 	msg_buf[msg_pos] = '+'; //end byte

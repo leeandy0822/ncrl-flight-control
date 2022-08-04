@@ -146,7 +146,7 @@ void task_flight_ctrl(void *param)
 
 #if (SELECT_NAVIGATION_DEVICE2 == NAV_DEV2_USE_NCRL_LINK)
 
-		ncrl_link_send_fsm_200hz();
+		//ncrl_link_send_fsm_200hz();
 		ncrl_link_update();
 #endif
 

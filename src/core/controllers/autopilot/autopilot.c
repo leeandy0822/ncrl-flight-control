@@ -11,6 +11,7 @@
 #include "trajectory_following.h"
 #include "takeoff_landing.h"
 #include "waypoint_following.h"
+#include "ncrl_link_command.h"
 #include "board_porting.h"
 #include "system_state.h"
 #include "sbus_radio.h"
@@ -83,6 +84,14 @@ void autopilot_assign_pos_target(float x, float y, float z)
 	autopilot.ctrl_target.pos[1] = y;
 	autopilot.ctrl_target.pos[2] = z;
 }
+
+void autopilot_assign_goto_target(float x, float y, float z)
+{
+	autopilot.goto_target.pos[0] = x;
+	autopilot.goto_target.pos[1] = y;
+	autopilot.goto_target.pos[2] = z;
+}
+
 
 void autopilot_assign_pos_target_x(float x)
 {
@@ -218,6 +227,11 @@ void autopilot_get_accel_feedforward(float *accel_ff)
 	accel_ff[2] = autopilot.ctrl_target.acc_feedforward[2];
 }
 
+void autopilot_assign_ncrl_link_command(char mode ,char aux_info){
+	autopilot.ncrl_link_mode = mode;
+	autopilot.ncrl_link_aux_info = aux_info;
+}
+
 void autopilot_hovering_position_trimming_handler(radio_t *rc)
 {
 	const float dt = 0.0001;
@@ -313,6 +327,9 @@ void autopilot_guidance_handler(radio_t *rc, float *curr_pos_enu, float *curr_ve
 		break;
 	case AUTOPILOT_FOLLOW_WAYPOINT_MODE:
 		autopilot_follow_waypoint_handler(curr_pos_enu);
+		break;
+	case NCRL_LINK_COMMAND_MODE:
+		ncrl_link_command_handler(autopilot.ncrl_link_mode, autopilot.ncrl_link_aux_info, curr_pos_enu);
 		break;
 	}
 }
