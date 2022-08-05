@@ -16,6 +16,7 @@
 
 #define UART2_QUEUE_SIZE 100
 #define UART3_QUEUE_SIZE 500
+#define UART7_QUEUE_SIZE 100
 
 /* TODO: vins-mono uart tx driver is not implemented!
  * place `ncrl_link_isr_handler(c);` in uart1 or uart7 isr handler */
@@ -24,16 +25,11 @@
 SemaphoreHandle_t uart2_tx_semphr;
 SemaphoreHandle_t uart3_tx_semphr;
 SemaphoreHandle_t uart4_tx_semphr;
+SemaphoreHandle_t uart7_tx_semphr;
 
 QueueHandle_t uart2_rx_queue;
 QueueHandle_t uart3_rx_queue;
 
-/*
- * <uart7>
- * usage:
- * tx:
- * rx:
- */
 void uart1_init(int baudrate)
 {
 	//XXX: reserved, not implemented yet
@@ -373,9 +369,6 @@ void uart4_puts(char *s, int size)
 	usart_puts(UART4, s, size);
 }
 
-
-
-
 //specially designed puts function of uart6 for vins-mono
 void uart6_puts(char *s, int size)
 {
@@ -423,6 +416,13 @@ void uart7_puts(char *s, int size)
 {
 #if 1
 
+	static bool uart7_tx_busy = false;
+
+	if(uart7_tx_busy == true && DMA_GetFlagStatus(DMA1_Stream1, DMA_FLAG_TCIF1) == RESET) {
+		return;
+	} else {
+		uart7_tx_busy = false;
+	}
 	static uint8_t uart7_buf[100];
 	memcpy(uart7_buf, s, size);
 
@@ -450,7 +450,8 @@ void uart7_puts(char *s, int size)
 	//send data from memory to uart data register
 	DMA_Cmd(DMA1_Stream1, ENABLE);
 	USART_DMACmd(UART7, USART_DMAReq_Tx, ENABLE);
-
+	uart7_tx_busy = true;
+	
 #else
 	usart_puts(UART7, s, size);
 #endif
@@ -490,7 +491,6 @@ void DMA1_Stream3_IRQHandler(void)
 		portEND_SWITCHING_ISR(higher_priority_task_woken);
 	}
 }
-
 void DMA1_Stream6_IRQHandler(void)
 {
 	/* uart2 tx dma */
@@ -513,7 +513,6 @@ void USART1_IRQHandler(void)
 		//USART1->SR;
 	}
 }
-
 void USART2_IRQHandler(void)
 {
 	if(USART_GetITStatus(USART2, USART_IT_RXNE) == SET) {
@@ -538,7 +537,6 @@ void USART3_IRQHandler(void)
 		portEND_SWITCHING_ISR(higher_priority_task_woken);
 	}
 }
-
 void UART4_IRQHandler(void)
 {
 	uint8_t c;
@@ -554,7 +552,6 @@ void UART4_IRQHandler(void)
 #endif
 	}
 }
-
 void USART6_IRQHandler(void)
 {
 	uint8_t c;
@@ -564,7 +561,6 @@ void USART6_IRQHandler(void)
 		sbus_rc_isr_handler(c);
 	}
 }
-
 void UART7_IRQHandler(void)
 {
 	//XXX: initialization not implemented

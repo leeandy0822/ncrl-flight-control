@@ -495,6 +495,7 @@ void mr_geometry_ctrl_thrust_allocation(float *moment, float total_force)
 
 void rc_mode_handler_geometry_ctrl(radio_t *rc)
 {
+	set_rgb_led_ncrl_link_flag(false);
 
 	multirotor_rc_special_function_handler(rc);
 
@@ -503,6 +504,7 @@ void rc_mode_handler_geometry_ctrl(radio_t *rc)
 
 		// auto mode
 		if(rc->auto_flight == true) {
+
 			autopilot_set_mode(AUTOPILOT_HOVERING_MODE);
 
 			//set desired position to current position
@@ -521,6 +523,9 @@ void rc_mode_handler_geometry_ctrl(radio_t *rc)
 
 				autopilot_set_mode(NCRL_LINK_COMMAND_MODE);
 
+				send_ncrl_link_fsm_msg();
+				set_rgb_led_ncrl_link_flag(true);
+
 				// get ncrl link data 
 				char mode = ncrl_link_get_mode();
 				char aux_info = ncrl_link_get_aux_info();
@@ -530,7 +535,6 @@ void rc_mode_handler_geometry_ctrl(radio_t *rc)
 				autopilot_assign_ncrl_link_command(mode,aux_info);
 
 			}else{
-
 				autopilot_set_mode(AUTOPILOT_MANUAL_FLIGHT_MODE);
 				autopilot_mission_reset();
 				autopilot_assign_pos_target(0.0f, 0.0f, 0.0f);

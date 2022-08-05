@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "uart.h": "c",
-        "vins_mono.h": "c"
+        "vins_mono.h": "c",
+        "sbus_radio.h": "c"
     }
 }
