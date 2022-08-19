@@ -170,6 +170,7 @@ void autopilot_set_mode(int new_mode);
 void autopilot_set_armed(void);
 void autopilot_set_disarmed(void);
 
+char autopilot_get_ncrl_link_mode(void);
 int autopilot_get_mode(void);
 float autopilot_get_heading_setpoint(void);
 void autopilot_get_pos_setpoint(float *pos_set);

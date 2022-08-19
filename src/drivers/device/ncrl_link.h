@@ -40,8 +40,8 @@ int ncrl_link_serial_decoder(uint8_t *buf);
 void ncrl_link_isr_handler(uint8_t c);
 
 /* transmission of imu information for vins-mono */
-void send_ncrl_link_fsm_msg(void);
-void ncrl_link_send_fsm_200hz(void);
+void send_ncrl_link_fsm_msg(float);
+// void ncrl_link_send_fsm_200hz(void);
 
 /* vins-mono camera triggering */
 void ncrl_link_camera_trigger_20hz(void);
@@ -50,6 +50,8 @@ void ncrl_link_update(void);
 bool ncrl_link_available(void);
 
 /* ncrl_link getters */
+
+void ncrl_link_get_target_enu(float *pos);
 void ncrl_link_get_position_enu(float *pos);
 float ncrl_link_get_position_enu_x(void);
 float ncrl_link_get_position_enu_y(void);

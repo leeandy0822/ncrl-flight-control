@@ -12,23 +12,26 @@
 
 extern autopilot_t autopilot;
 
-
 void ncrl_link_command_handler(char mode_, char aux_info, float* curr_pos_enu){
     
     char mode = mode_;
     switch (mode){
-        case '0' : /* takeoff */
+        case '1' : /* takeoff */
 		    autopilot_takeoff_handler();
+            send_ncrl_link_fsm_msg(0.0);
             break;
 
-        case '1' : /* goto */
+        case '2' : /* goto */
 		    autopilot_goto_handler(curr_pos_enu);
-            //send_ncrl_link_fsm_msg();
+            send_ncrl_link_fsm_msg(1.0);
             break;
 
-        case '2' : /* landing */
+        case '3' : /* landing */
 		    autopilot_landing_handler(curr_pos_enu);
-            //send_ncrl_link_fsm_msg();
+            send_ncrl_link_fsm_msg(2.0);
+            break;
+        default :
+            send_ncrl_link_fsm_msg(-1.0);
             break;
     }
 }

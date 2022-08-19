@@ -522,15 +522,13 @@ void rc_mode_handler_geometry_ctrl(radio_t *rc)
 			if(rc->aux1_mode == 2){
 
 				autopilot_set_mode(NCRL_LINK_COMMAND_MODE);
-
-				send_ncrl_link_fsm_msg();
 				set_rgb_led_ncrl_link_flag(true);
 
 				// get ncrl link data 
 				char mode = ncrl_link_get_mode();
 				char aux_info = ncrl_link_get_aux_info();
 				float target_pos[3] = {0.0f};
-				ncrl_link_get_position_ned(target_pos);
+				ncrl_link_get_target_enu(target_pos);
 				autopilot_assign_goto_target(target_pos[0], target_pos[1], target_pos[2]);
 				autopilot_assign_ncrl_link_command(mode,aux_info);
 
@@ -626,7 +624,7 @@ void multirotor_geometry_control(radio_t *rc)
 
 	float control_moments[3] = {0.0f}, control_force = 0.0f;
 
-	if(rc->auto_flight == true && height_availabe && heading_available) {
+	if( (rc->aux1_mode == 2 ||rc->auto_flight == true) && height_availabe && heading_available) {
 		if(xy_pos_available == false) {
 			height_ctrl_only = true;
 		}
@@ -655,6 +653,12 @@ void multirotor_geometry_control(radio_t *rc)
 
 	bool lock_motor = false;
 
+	bool ncrl_link_lock = true;
+
+	if(autopilot_get_mode()==NCRL_LINK_COMMAND_MODE){
+		ncrl_link_lock = !(autopilot_get_ncrl_link_mode() == '1'||autopilot_get_ncrl_link_mode() == '2'||(autopilot_get_ncrl_link_mode() == '3'&&curr_pos_enu[2] > 0.15f));
+	}
+
 	//lock motor if throttle values is lower than 10% during manual flight
 	lock_motor |= check_motor_lock_condition(rc->throttle < 10.0f &&
 	                autopilot_get_mode() == AUTOPILOT_MANUAL_FLIGHT_MODE);
@@ -664,6 +668,9 @@ void multirotor_geometry_control(radio_t *rc)
 	//lock motor if current position is very close to ground in the hovering mode
 	lock_motor |= check_motor_lock_condition(curr_pos_enu[2] < 0.10f &&
 	                autopilot_get_mode() == AUTOPILOT_HOVERING_MODE);
+	//lock motor if current position is very close to ground in the ncrl link mode 
+	lock_motor |= check_motor_lock_condition(curr_pos_enu[2] < 0.15f &&
+	                ncrl_link_lock && autopilot_get_mode()==NCRL_LINK_COMMAND_MODE);
 	//lock motor if motors are locked by autopilot
 	lock_motor |= check_motor_lock_condition(autopilot_get_mode() == AUTOPILOT_MOTOR_LOCKED_MODE);
 	//lock motor if radio safety botton is on

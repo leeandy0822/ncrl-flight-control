@@ -248,25 +248,9 @@ void autopilot_follow_waypoint_handler(float *curr_pos)
 
 void autopilot_goto_handler(float *curr_pos)
 {
+
 #if (WAYPOINT_SMOOTH_VARYING != 0)
 	/* smooth waypoint varying: linearly move the setpoint to the target position */
-
-	/* calculate direction vector from current position to the desired position */
-	float dir_vec[3];
-	dir_vec[0] = autopilot.goto_target.pos[0] - curr_pos[0];
-	dir_vec[1] = autopilot.goto_target.pos[1] - curr_pos[1];
-	if(autopilot.goto_target.change_height == true) {
-		dir_vec[2] = autopilot.goto_target.pos[2] - curr_pos[2];
-	}
-	normalize_3x1(dir_vec);
-
-	/* move the desired position from original position to the target */
-	float pos_inc = autopilot.tracking_speed * autopilot.period;
-	autopilot.ctrl_target.pos[0] += dir_vec[0] * pos_inc;
-	autopilot.ctrl_target.pos[1] += dir_vec[1] * pos_inc;
-	if(autopilot.goto_target.change_height == true) {
-		autopilot.ctrl_target.pos[2] += dir_vec[2] * pos_inc;
-	}
 
 	/* calculate 2-norm to check if enter the waypoint touch zone or not */
 	float curr_dist[3];
@@ -283,10 +267,30 @@ void autopilot_goto_handler(float *curr_pos)
 
 	float accept_dist = autopilot.waypoint_touch_radius *
 	                    autopilot.waypoint_touch_radius;
+
 	if((curr_dist[0] + curr_dist[1] + curr_dist[2]) < accept_dist) {
 		/* start the timer */
 		autopilot.waypoint_wait_timer = get_sys_time_s();
 		autopilot.mode = AUTOPILOT_HOVERING_MODE;
+
+	}else{
+		/* calculate direction vector from current position to the desired position */
+		float dir_vec[3];
+		dir_vec[0] = autopilot.goto_target.pos[0] - curr_pos[0];
+		dir_vec[1] = autopilot.goto_target.pos[1] - curr_pos[1];
+		if(autopilot.goto_target.change_height == true) {
+			dir_vec[2] = autopilot.goto_target.pos[2] - curr_pos[2];
+		}
+		normalize_3x1(dir_vec);
+
+		/* move the desired position from original position to the target */
+		float pos_inc = autopilot.tracking_speed * autopilot.period;
+		autopilot.ctrl_target.pos[0] += dir_vec[0] * pos_inc;
+		autopilot.ctrl_target.pos[1] += dir_vec[1] * pos_inc;
+		if(autopilot.goto_target.change_height == true) {
+			autopilot.ctrl_target.pos[2] += dir_vec[2] * pos_inc;
+		}
 	}
+	
 #endif
 }

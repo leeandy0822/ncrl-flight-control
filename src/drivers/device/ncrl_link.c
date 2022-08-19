@@ -14,6 +14,7 @@
 #include "proj_config.h"
 #include "board_porting.h"
 #include "quaternion.h"
+#include "optitrack.h"
 
 #define NCRL_LINK_MSG_SIZE 21 
 #define NCRL_LINK_CHECKSUM_INIT_VAL 19
@@ -142,11 +143,14 @@ char ncrl_link_get_aux_info(void)
 	return ncrl_link.aux_info;
 }
 
-void ncrl_link_test_function(float test ){
-	ncrl_link.data[0] = test;	
+void ncrl_link_get_position_enu(float *pos)
+{
+	pos[0] = ncrl_link.data[0];
+	pos[1] = ncrl_link.data[1];
+	pos[2] = ncrl_link.data[2];
 }
 
-void ncrl_link_get_position_enu(float *pos)
+void ncrl_link_get_target_enu(float *pos)
 {
 	pos[0] = ncrl_link.data[0];
 	pos[1] = ncrl_link.data[1];
@@ -243,14 +247,14 @@ void ncrl_link_get_quaternion(float *q)
 }
 
 
-void send_ncrl_link_fsm_msg(void)
+void send_ncrl_link_fsm_msg(float test )
 {
 	/*+------------+----------+------+----------+---------+---------+---------+---------+----------+
 	 *| start byte | checksum | mode | aux_info | data[0] | data[1] | data[2] | data[3] | end byte |
 	 *+------------+----------+------+----------+---------+---------+---------+---------+----------+*/
-	float test = 3.0;
-	float gyro[3] = {0.0f};
-	get_gyro_lpf(gyro);
+	float cur_pos[3] = {0.0f};
+
+	optitrack_get_position_enu(cur_pos);
 
 	char msg_buf[NCRL_LINK_MSG_SIZE] = {0};
 	int msg_pos = 0;
@@ -266,11 +270,11 @@ void send_ncrl_link_fsm_msg(void)
 	msg_pos += sizeof(char);
 	memcpy(msg_buf + msg_pos, &ncrl_link.aux_info, sizeof(char));
 	msg_pos += sizeof(char);
-	memcpy(msg_buf + msg_pos, &test, sizeof(float));
+	memcpy(msg_buf + msg_pos, &cur_pos[0], sizeof(float));
 	msg_pos += sizeof(float);
-	memcpy(msg_buf + msg_pos, &test, sizeof(float));
+	memcpy(msg_buf + msg_pos, &cur_pos[1], sizeof(float));
 	msg_pos += sizeof(float);
-	memcpy(msg_buf + msg_pos, &test, sizeof(float));
+	memcpy(msg_buf + msg_pos, &cur_pos[2], sizeof(float));
 	msg_pos += sizeof(float);
 	memcpy(msg_buf + msg_pos, &test, sizeof(float));
 	msg_pos += sizeof(float);
@@ -284,18 +288,18 @@ void send_ncrl_link_fsm_msg(void)
 	ncrl_link_puts(msg_buf, NCRL_LINK_MSG_SIZE);
 }
 
-void ncrl_link_send_fsm_200hz(void)
-{
-	/* triggered every 2 times since the function is designed to be called by
-	 * flight control main loop (400Hz) */
-	static int prescaler = 2;
-	prescaler--;
+// void ncrl_link_send_fsm_200hz(void)
+// {
+// 	/* triggered every 2 times since the function is designed to be called by
+// 	 * flight control main loop (400Hz) */
+// 	static int prescaler = 2;
+// 	prescaler--;
 
-	if(prescaler == 0) {
-		send_ncrl_link_fsm_msg();
-		prescaler = 2;
-	}
-}
+// 	if(prescaler == 0) {
+// 		send_ncrl_link_fsm_msg();
+// 		prescaler = 2;
+// 	}
+// }
 
 void ncrl_link_camera_trigger_20hz(void)
 {
