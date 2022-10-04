@@ -62,7 +62,7 @@ void ncp5623c_led_toggle(bool red_toggle, bool green_toggle, bool blue_toggle)
 }
 
 
-#if(USE_TCA == 1)
+#if(USE_TCA == 0)
 
 void ncp5623c_write(float red, float green, float blue)
 {

@@ -3,5 +3,9 @@
         "uart.h": "c",
         "vins_mono.h": "c",
         "sbus_radio.h": "c"
-    }
+    },
+    "python.autoComplete.extraPaths": [
+        "/home/leeandy/catkin_ws/devel/lib/python2.7/dist-packages",
+        "/opt/ros/melodic/lib/python2.7/dist-packages"
+    ]
 }
