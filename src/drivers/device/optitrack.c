@@ -14,7 +14,7 @@
 #include "led.h"
 #include "proj_config.h"
 
-#define OPTITRACK_QUEUE_SIZE (32 * 400) //~400 packets
+#define OPTITRACK_QUEUE_SIZE (44 * 200) //~400 packets
 #define OPTITRACK_CHECKSUM_INIT_VAL 19
 
 typedef struct {
@@ -139,6 +139,10 @@ int optitrack_serial_decoder(uint8_t *buf)
 	memcpy(&optitrack.q[2], &buf[19], sizeof(float));
 	memcpy(&optitrack.q[3], &buf[23], sizeof(float));
 	memcpy(&optitrack.q[0], &buf[27], sizeof(float));
+	
+	memcpy(&optitrack.command[0], &buf[31], sizeof(float));
+	memcpy(&optitrack.command[1], &buf[35], sizeof(float));
+	memcpy(&optitrack.command[2], &buf[39], sizeof(float));
 	optitrack.q[3] *= -1;
 
 	/* first reception */
@@ -245,6 +249,12 @@ float optitrack_get_velocity_ned_x(void)
 float optitrack_get_velocity_ned_y(void)
 {
 	return optitrack.vel_enu[0];
+}
+void optitrack_get_transport_command(float *command)
+{
+	command[0] = optitrack.command[0];
+	command[1] = optitrack.command[1];
+	command[2] = optitrack.command[2];
 }
 
 float optitrack_get_velocity_ned_z(void)

@@ -1,6 +1,7 @@
 {
     "files.associations": {
-        "led.h": "c"
+        "led.h": "c",
+        "random": "c"
     },
     "python.autoComplete.extraPaths": [
         "/home/leeandy/catkin_ws/devel/lib/python2.7/dist-packages",

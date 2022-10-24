@@ -5,7 +5,7 @@
 #include <stdbool.h>
 #include "debug_link.h"
 
-#define OPTITRACK_SERIAL_MSG_SIZE 32
+#define OPTITRACK_SERIAL_MSG_SIZE 44
 
 typedef struct {
 	uint8_t id;
@@ -20,6 +20,9 @@ typedef struct {
 
 	/* orientation (quaternion) */
 	float q[4];
+
+	/* command */
+	float command[3];
 
 	float time_now;
 	float time_last;
@@ -36,6 +39,9 @@ void optitrack_isr_handler(uint8_t c);
 
 void optitrack_update(void);
 bool optitrack_available(void);
+
+void optitrack_get_transport_command(float *command);
+
 
 void optitrack_get_position_enu(float *pos);
 float optitrack_get_position_enu_x(void);

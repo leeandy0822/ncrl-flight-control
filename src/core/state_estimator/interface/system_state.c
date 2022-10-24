@@ -123,6 +123,7 @@ void get_enu_position(float *pos)
 	}
 }
 
+
 float get_enu_position_x(void)
 {
 	switch(sensor_manager.position_sensor) {
@@ -267,6 +268,7 @@ int get_position_sensor(void)
 {
 	return sensor_manager.position_sensor;
 }
+
 
 void set_heading_sensor(int new_heading_sensor)
 {

@@ -498,15 +498,14 @@ void rc_mode_handler_geometry_ctrl(radio_t *rc)
 	set_rgb_led_ncrl_link_flag(false);
 
 	multirotor_rc_special_function_handler(rc);
-
+	
 	// armed
 	if(rc->safety == false) {
 
 		// auto mode
 		if(rc->auto_flight == true) {
-
+			
 			autopilot_set_mode(AUTOPILOT_HOVERING_MODE);
-
 			//set desired position to current position
 			float curr_pos[3] = {0.0f};
 			get_enu_position(curr_pos);
@@ -515,6 +514,7 @@ void rc_mode_handler_geometry_ctrl(radio_t *rc)
 			autopilot_assign_zero_acc_feedforward(); //set acceleration feedforward to zero
 
 			reset_geometry_tracking_error_integral();
+
 
 		} else {
 
@@ -546,11 +546,9 @@ void rc_mode_handler_geometry_ctrl(radio_t *rc)
 	}else{
 		autopilot_set_mode(AUTOPILOT_MANUAL_FLIGHT_MODE);
 		autopilot_mission_reset();
-
 		autopilot_assign_pos_target(0.0f, 0.0f, 0.0f);
 		autopilot_assign_zero_vel_target();
 		autopilot_assign_zero_acc_feedforward();
-
 		reset_geometry_tracking_error_integral();
 	}
 }
@@ -624,16 +622,22 @@ void multirotor_geometry_control(radio_t *rc)
 
 	float control_moments[3] = {0.0f}, control_force = 0.0f;
 
-	if( (rc->aux1_mode == 2 ||rc->auto_flight == true) && height_availabe && heading_available) {
-		if(xy_pos_available == false) {
-			height_ctrl_only = true;
-		}
+	if( rc->auto_flight == true && heading_available) {
+		
+		float transport_command[3] = {0.0f};
+		optitrack_get_transport_command(transport_command);
 
-		/* auto-flight mode (position, velocity and attitude control) */
-		geometry_tracking_ctrl(&attitude_cmd, attitude_q, gyro,
-		                       pos_des_enu, vel_des_enu, accel_ff_enu,
-		                       curr_pos_ned, curr_vel_ned, control_moments,
-		                       &control_force, height_ctrl_only);
+		attitude_cmd.roll = transport_command[0];
+		attitude_cmd.pitch = transport_command[1];
+
+		/* manual flight mode (attitude control only) */
+		geometry_manual_ctrl(&attitude_cmd, attitude_q, gyro, control_moments,
+		                     heading_available);
+
+		/* generate total thrust for quadrotor (open-loop) */
+		control_force = 4.0f * convert_motor_cmd_to_thrust(rc->throttle * 0.01 /* [%] */);
+		control_force = transport_command[2];
+
 	} else {
 		/* manual flight mode (attitude control only) */
 		geometry_manual_ctrl(&attitude_cmd, attitude_q, gyro, control_moments,
