@@ -27,7 +27,7 @@ void task_debug_link(void *param)
 {
 	debug_msg_t payload;
 
-	/* only one kind of debug link message can be sent by one time,
+	/* only one kind of dfebug link message can be sent by one time,
 	 * choose the one by uncomment it */
 	while(1) {
 		//while(xSemaphoreTake(debug_link_task_semphr, portMAX_DELAY) != pdTRUE);

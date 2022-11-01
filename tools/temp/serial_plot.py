@@ -8,9 +8,10 @@ import struct
 import time
 from collections import deque
 from datetime import datetime
-
+import matplotlib
+matplotlib.use("TkAgg")
 ser = serial.Serial(
-    port='/dev/ttyUSB2',
+    port='/dev/ttyUSB0',
     baudrate=115200,
     parity=serial.PARITY_NONE,
     stopbits=serial.STOPBITS_ONE,

@@ -29,7 +29,7 @@
 #include "ncrl_link.h"
 
 #define dt 0.0025 //[s]
-#define MOTOR_TO_CG_LENGTH 16.25f //[cm]
+#define MOTOR_TO_CG_LENGTH 8.84f //[cm]
 #define MOTOR_TO_CG_LENGTH_M (MOTOR_TO_CG_LENGTH * 0.01) //[m]
 #define COEFFICIENT_YAW 1.0f
 
@@ -89,6 +89,9 @@ float coeff_thrust_to_cmd[6] = {0.0f};
 float motor_thrust_max = 0.0f;
 
 bool height_ctrl_only = false;
+bool first_rc_signal_rec = true;
+float rc_roll_offset = 0.0f;
+float rc_pitch_offset = 0.0f;
 
 void geometry_ctrl_init(void)
 {
@@ -610,8 +613,16 @@ void multirotor_geometry_control(radio_t *rc)
 
 	/* prepare manual control attitude commands (euler angles) */
 	euler_t attitude_cmd;
+
+	if (first_rc_signal_rec){
+		rc_roll_offset = rc->roll;
+		rc_pitch_offset = rc->pitch;
+		first_rc_signal_rec = false;
+	}
+
 	attitude_cmd.roll = deg_to_rad(-rc->roll);
 	attitude_cmd.pitch = deg_to_rad(-rc->pitch);
+	
 	if(heading_available == true) {
 		//yaw control mode
 		attitude_cmd.yaw = deg_to_rad(desired_heading);
@@ -622,13 +633,14 @@ void multirotor_geometry_control(radio_t *rc)
 
 	float control_moments[3] = {0.0f}, control_force = 0.0f;
 
+
 	if( rc->auto_flight == true && heading_available) {
 		
 		float transport_command[3] = {0.0f};
 		optitrack_get_transport_command(transport_command);
 
-		attitude_cmd.roll = transport_command[0];
-		attitude_cmd.pitch = transport_command[1];
+		attitude_cmd.roll = deg_to_rad(-transport_command[0]);
+		attitude_cmd.pitch = deg_to_rad(-transport_command[1]);
 
 		/* manual flight mode (attitude control only) */
 		geometry_manual_ctrl(&attitude_cmd, attitude_q, gyro, control_moments,
