@@ -5,23 +5,23 @@
 #include <stdbool.h>
 
 /* calibrated rc signal */
-#define RC_THROTTLE_MAX 1680
-#define RC_THROTTLE_MIN 368
+#define RC_THROTTLE_MAX 1686
+#define RC_THROTTLE_MIN 304
 
-#define RC_ROLL_MAX 1680
-#define RC_ROLL_MIN 366
+#define RC_ROLL_MAX 1707   
+#define RC_ROLL_MIN 330    
 
-#define RC_PITCH_MAX 1680
-#define RC_PITCH_MIN 368
+#define RC_PITCH_MAX 1716  
+#define RC_PITCH_MIN 356   
 
-#define RC_YAW_MAX 1680
-#define RC_YAW_MIN 371
+#define RC_YAW_MAX 1689    
+#define RC_YAW_MIN 306     
 
-#define RC_SAFETY_MAX 1904
-#define RC_SAFETY_MIN 144
+#define RC_SAFETY_MAX 1904 
+#define RC_SAFETY_MIN 144  
 
-#define RC_SAFETY_MAX 1904
-#define RC_SAFETY_MIN 144
+#define RC_SAFETY_MAX 1904 
+#define RC_SAFETY_MIN 144  
 
 #define RC_AUTO_FLIGHT_MAX 1904
 #define RC_AUTO_FLIGHT_MIN 144
@@ -29,6 +29,7 @@
 #define RC_FLIGHT_MODE_MAX 1904
 #define RC_FLIGHT_MODE_MID 1024
 #define RC_FLIGHT_MODE_MIN 144
+
 
 /* define radio control range */
 #define RC_THROTTLE_RANGE_MAX 100.0f
