@@ -28,7 +28,7 @@
 #include "sensor_switching.h"
 
 #define dt 0.0025 //[s]
-#define MOTOR_TO_CG_LENGTH 16.25f //[cm]
+#define MOTOR_TO_CG_LENGTH 8.125f //[cm]
 #define MOTOR_TO_CG_LENGTH_M (MOTOR_TO_CG_LENGTH * 0.01) //[m]
 #define COEFFICIENT_YAW 1.0f
 
