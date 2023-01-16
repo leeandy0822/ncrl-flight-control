@@ -44,11 +44,7 @@ int main(void)
 	/* rgb led indicator service */
 	rgb_led_service_init();
 
-	/* sensor task (highest priority) */
-	imu_register_task("task_imu", 512, tskIDLE_PRIORITY + 7);
-#if (ENABLE_BAROMETER != 0)
-	baro_register_task("task_imu", 512, tskIDLE_PRIORITY + 7);
-#endif
+	
 	/* flight controller task (highest priority) */
 	flight_controller_register_task("flight controller", 2048, tskIDLE_PRIORITY + 6);
 
