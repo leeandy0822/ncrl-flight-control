@@ -37,7 +37,7 @@ void board_init(void)
 	uart3_init(115200); //mavlink
 	uart2_init(115200); //telem
 	uart6_init(100000); //s-bus
-
+	
 	// position sensors in pixhawk
 #if (SELECT_NAVIGATION_DEVICE1 == NAV_DEV1_USE_GPS)
 	uart4_init(38400); //gps
@@ -48,8 +48,8 @@ void board_init(void)
 #endif
 
 #if (SELECT_NAVIGATION_DEVICE2 == NAV_DEV2_USE_VINS_MONO)
-	//uart6_init(115200);
-	//vins_mono_init(UAV_DEFAULT_ID);
+	uart7_init(115200);
+	vins_mono_init(UAV_DEFAULT_ID);
 #endif
 
 	timer12_init();

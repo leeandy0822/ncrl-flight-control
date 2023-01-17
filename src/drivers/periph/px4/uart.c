@@ -9,36 +9,25 @@
 #include "isr.h"
 #include "sbus_radio.h"
 #include "optitrack.h"
-#include "vins_mono.h"
 #include "ublox_m8n.h"
 #include "proj_config.h"
 #include "uart.h"
+#include "vins_mono.h"
 
 #define UART2_QUEUE_SIZE 100
 #define UART3_QUEUE_SIZE 500
+#define UART7_QUEUE_SIZE 100
 
-/* TODO: vins-mono uart tx driver is not implemented!
- * place `vins_mono_isr_handler(c);` in uart1 or uart7 isr handler */
 
-/* TODO: vins-mono uart rx driver is not implemented! */
-void vins_mono_puts(char *s, int size)
-{
-	//XXX: this is a dummy function
-}
 
 SemaphoreHandle_t uart2_tx_semphr;
 SemaphoreHandle_t uart3_tx_semphr;
 SemaphoreHandle_t uart4_tx_semphr;
+SemaphoreHandle_t uart7_tx_semphr;
 
 QueueHandle_t uart2_rx_queue;
 QueueHandle_t uart3_rx_queue;
 
-/*
- * <uart7>
- * usage:
- * tx:
- * rx:
- */
 void uart1_init(int baudrate)
 {
 	//XXX: reserved, not implemented yet
@@ -249,13 +238,47 @@ void uart6_init(int baudrate)
 
 /*
  * <uart7>
- * usage:
- * tx:
- * rx:
+ * usage: ncrl link
+ * tx: mode AUX pos 
+ * rx: mode AUX pos 
  */
 void uart7_init(int baudrate)
 {
-	//XXX: reserved, not implemented yet
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOE, ENABLE);
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA1, ENABLE);
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_UART7, ENABLE);
+
+	GPIO_PinAFConfig(GPIOE, GPIO_PinSource7, GPIO_AF_UART7);
+	GPIO_PinAFConfig(GPIOE, GPIO_PinSource8, GPIO_AF_UART7);
+
+	GPIO_InitTypeDef GPIO_InitStruct = {
+		.GPIO_Pin = GPIO_Pin_7 | GPIO_Pin_8,
+		.GPIO_Mode = GPIO_Mode_AF,
+		.GPIO_Speed = GPIO_Speed_50MHz,
+		.GPIO_OType = GPIO_OType_PP,
+		.GPIO_PuPd = GPIO_PuPd_UP
+	};
+	GPIO_Init(GPIOE, &GPIO_InitStruct);
+
+	USART_InitTypeDef USART_InitStruct = {
+		.USART_BaudRate = baudrate,
+		.USART_Mode = USART_Mode_Rx | USART_Mode_Tx,
+		.USART_WordLength = USART_WordLength_8b,
+		.USART_StopBits = USART_StopBits_1,
+		.USART_Parity = USART_Parity_No
+	};
+	USART_Init(UART7, &USART_InitStruct);
+	USART_Cmd(UART7, ENABLE);
+	USART_ClearFlag(UART7, USART_FLAG_TC);
+
+	NVIC_InitTypeDef NVIC_InitStruct = {
+		.NVIC_IRQChannel = UART7_IRQn,
+		.NVIC_IRQChannelPreemptionPriority = SLAM_UART_PRIORITY,
+		.NVIC_IRQChannelSubPriority = 0,
+		.NVIC_IRQChannelCmd = ENABLE
+	};
+	NVIC_Init(&NVIC_InitStruct);
+	USART_ITConfig(UART7, USART_IT_RXNE, ENABLE);
 }
 
 void uart_putc(USART_TypeDef *uart, char c)
@@ -344,7 +367,6 @@ void uart4_puts(char *s, int size)
 	usart_puts(UART4, s, size);
 }
 
-#if 0
 //specially designed puts function of uart6 for vins-mono
 void uart6_puts(char *s, int size)
 {
@@ -386,9 +408,53 @@ void uart6_puts(char *s, int size)
 
 	uart6_tx_busy = true;
 
-	//while(DMA_GetFlagStatus(DMA2_Stream6, DMA_FLAG_TCIF6) == RESET);
 }
+
+void uart7_puts(char *s, int size)
+{
+#if 1
+
+	static bool uart7_tx_busy = false;
+
+	if(uart7_tx_busy == true && DMA_GetFlagStatus(DMA1_Stream1, DMA_FLAG_TCIF1) == RESET) {
+		return;
+	} else {
+		uart7_tx_busy = false;
+	}
+	static uint8_t uart7_buf[100];
+	memcpy(uart7_buf, s, size);
+
+	//uart7 tx: dma1 channel5 stream1
+	DMA_ClearFlag(DMA1_Stream1, DMA_FLAG_TCIF1);
+
+	DMA_InitTypeDef DMA_InitStructure = {
+		.DMA_BufferSize = (uint32_t)size,
+		.DMA_FIFOMode = DMA_FIFOMode_Disable,
+		.DMA_FIFOThreshold = DMA_FIFOThreshold_Full,
+		.DMA_MemoryBurst = DMA_MemoryBurst_Single,
+		.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte,
+		.DMA_MemoryInc = DMA_MemoryInc_Enable,
+		.DMA_Mode = DMA_Mode_Normal,
+		.DMA_PeripheralBaseAddr = (uint32_t)(&UART7->DR),
+		.DMA_PeripheralBurst = DMA_PeripheralBurst_Single,
+		.DMA_PeripheralInc = DMA_PeripheralInc_Disable,
+		.DMA_Priority = DMA_Priority_Medium,
+		.DMA_Channel = DMA_Channel_5,
+		.DMA_DIR = DMA_DIR_MemoryToPeripheral,
+		.DMA_Memory0BaseAddr = (uint32_t)uart7_buf
+	};
+	DMA_Init(DMA1_Stream1, &DMA_InitStructure);
+
+	//send data from memory to uart data register
+	DMA_Cmd(DMA1_Stream1, ENABLE);
+	USART_DMACmd(UART7, USART_DMAReq_Tx, ENABLE);
+	uart7_tx_busy = true;
+	
+#else
+	usart_puts(UART7, s, size);
 #endif
+
+}
 
 bool uart2_getc(char *c, long sleep_ticks)
 {
@@ -423,7 +489,6 @@ void DMA1_Stream3_IRQHandler(void)
 		portEND_SWITCHING_ISR(higher_priority_task_woken);
 	}
 }
-
 void DMA1_Stream6_IRQHandler(void)
 {
 	/* uart2 tx dma */
@@ -446,7 +511,6 @@ void USART1_IRQHandler(void)
 		//USART1->SR;
 	}
 }
-
 void USART2_IRQHandler(void)
 {
 	if(USART_GetITStatus(USART2, USART_IT_RXNE) == SET) {
@@ -471,7 +535,6 @@ void USART3_IRQHandler(void)
 		portEND_SWITCHING_ISR(higher_priority_task_woken);
 	}
 }
-
 void UART4_IRQHandler(void)
 {
 	uint8_t c;
@@ -487,7 +550,6 @@ void UART4_IRQHandler(void)
 #endif
 	}
 }
-
 void USART6_IRQHandler(void)
 {
 	uint8_t c;
@@ -497,14 +559,14 @@ void USART6_IRQHandler(void)
 		sbus_rc_isr_handler(c);
 	}
 }
-
 void UART7_IRQHandler(void)
 {
 	//XXX: initialization not implemented
 
-	//uint8_t c;
+	uint8_t c;
 	if(USART_GetITStatus(UART7, USART_IT_RXNE) == SET) {
-		//c = USART_ReceiveData(UART7);
-		//UART7->SR;
+		c = USART_ReceiveData(UART7);
+		UART7->SR;
+		vins_mono_isr_handler(c);
 	}
 }

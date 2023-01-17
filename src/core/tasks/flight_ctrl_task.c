@@ -147,11 +147,7 @@ void task_flight_ctrl(void *param)
 		optitrack_update();
 #endif
 
-#if (SELECT_NAVIGATION_DEVICE2 == NAV_DEV2_USE_VINS_MONO)
-		vins_mono_camera_trigger_20hz();
-		vins_mono_send_imu_200hz();
-		vins_mono_update();
-#endif
+
 
 		sbus_rc_read(&rc);
 
@@ -169,8 +165,13 @@ void task_flight_ctrl(void *param)
 			multirotor_pid_control(&rc);
 #elif (SELECT_CONTROLLER == QUADROTOR_USE_GEOMETRY)
 			multirotor_geometry_control(&rc);
+#if (SELECT_NAVIGATION_DEVICE2 == NAV_DEV2_USE_VINS_MONO)
+		send_vins_mono_command_msg();
+#endif
 #endif
 		}
+
+
 		perf_end(PERF_CONTROLLER);
 
 		perf_end(PERF_FLIGHT_CONTROL_LOOP);
