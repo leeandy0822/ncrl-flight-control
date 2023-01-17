@@ -23,7 +23,7 @@
 #include "board_porting.h"
 #include "ins_sensor_sync.h"
 #include "ublox_m8n.h"
-
+#include "vins_mono.h"
 void f4_sw_i2c_driver_register_task(const char *task_name, configSTACK_DEPTH_TYPE stack_size,
                                     UBaseType_t priority);
 void board_init(void)
