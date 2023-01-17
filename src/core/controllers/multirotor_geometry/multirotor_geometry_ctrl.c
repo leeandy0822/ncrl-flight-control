@@ -542,106 +542,112 @@ void multirotor_geometry_control(radio_t *rc)
 	/* check rc events */
 	rc_mode_handler_geometry_ctrl(rc);
 
-	/* get sensor status */
-	bool xy_pos_available = is_xy_position_available();
-	bool height_availabe = is_height_available();
-	bool heading_available = is_heading_available();
+	// /* get sensor status */
+	// bool xy_pos_available = is_xy_position_available();
+	// bool height_availabe = is_height_available();
+	// bool heading_available = is_heading_available();
 
-	/* get imu data */
-	float accel_lpf[3];
-	float gyro_lpf[3];
-	get_accel_lpf(accel_lpf);
-	get_gyro_lpf(gyro_lpf);
+	// /* get imu data */
+	// float accel_lpf[3];
+	// float gyro_lpf[3];
+	// get_accel_lpf(accel_lpf);
+	// get_gyro_lpf(gyro_lpf);
 
-	/* get attitude quaternion */
-	float attitude_q[4];
-	get_attitude_quaternion(attitude_q);
+	// /* get attitude quaternion */
+	// float attitude_q[4];
+	// get_attitude_quaternion(attitude_q);
 
-	/* get roll, pitch, yaw angles */
-	float attitude_roll, attitude_pitch, attitude_yaw;
-	get_attitude_euler_angles(&attitude_roll, &attitude_pitch, &attitude_yaw);
+	// /* get roll, pitch, yaw angles */
+	// float attitude_roll, attitude_pitch, attitude_yaw;
+	// get_attitude_euler_angles(&attitude_roll, &attitude_pitch, &attitude_yaw);
 
-	/* get direction consine matrix of current attitude */
-	get_rotation_matrix_b2i(&mat_data(R));
-	get_rotation_matrix_i2b(&mat_data(Rt));
+	// /* get direction consine matrix of current attitude */
+	// get_rotation_matrix_b2i(&mat_data(R));
+	// get_rotation_matrix_i2b(&mat_data(Rt));
 
-	/* prepare position and velocity data */
-	float curr_pos_enu[3] = {0.0f}, curr_pos_ned[3] = {0.0f};
-	float curr_vel_enu[3] = {0.0f}, curr_vel_ned[3] = {0.0f};
-	get_enu_position(curr_pos_enu);
-	get_enu_velocity(curr_vel_enu);
-	assign_vector_3x1_enu_to_ned(curr_pos_ned, curr_pos_enu);
-	assign_vector_3x1_enu_to_ned(curr_vel_ned, curr_vel_enu);
+	// /* prepare position and velocity data */
+	// float curr_pos_enu[3] = {0.0f}, curr_pos_ned[3] = {0.0f};
+	// float curr_vel_enu[3] = {0.0f}, curr_vel_ned[3] = {0.0f};
+	// get_enu_position(curr_pos_enu);
+	// get_enu_velocity(curr_vel_enu);
+	// assign_vector_3x1_enu_to_ned(curr_pos_ned, curr_pos_enu);
+	// assign_vector_3x1_enu_to_ned(curr_vel_ned, curr_vel_enu);
 
-	/* prepare gyroscope data */
-	float gyro[3] = {0.0};
-	gyro[0] = deg_to_rad(gyro_lpf[0]);
-	gyro[1] = deg_to_rad(gyro_lpf[1]);
-	gyro[2] = deg_to_rad(gyro_lpf[2]);
+	// /* prepare gyroscope data */
+	// float gyro[3] = {0.0};
+	// gyro[0] = deg_to_rad(gyro_lpf[0]);
+	// gyro[1] = deg_to_rad(gyro_lpf[1]);
+	// gyro[2] = deg_to_rad(gyro_lpf[2]);
 
 	/* guidance loop (autopilot) */
-	autopilot_guidance_handler(rc, curr_pos_enu, curr_vel_enu);
+	// autopilot_guidance_handler(rc, curr_pos_enu, curr_vel_enu);
 
 	/* prepare desired heading angle, position, velocity and acceleration feedforward */
-	float desired_heading, pos_des_enu[3], vel_des_enu[3], accel_ff_enu[3];
-	desired_heading = autopilot_get_heading_setpoint();
-	autopilot_get_pos_setpoint(pos_des_enu);
-	autopilot_get_vel_setpoint(vel_des_enu);
-	autopilot_get_accel_feedforward(accel_ff_enu);
+	// float desired_heading, pos_des_enu[3], vel_des_enu[3], accel_ff_enu[3];
+	// desired_heading = autopilot_get_heading_setpoint();
+	// autopilot_get_pos_setpoint(pos_des_enu);
+	// autopilot_get_vel_setpoint(vel_des_enu);
+	// autopilot_get_accel_feedforward(accel_ff_enu);
 
 	/* prepare manual control attitude commands (euler angles) */
-	euler_t attitude_cmd;
-	attitude_cmd.roll = deg_to_rad(-rc->roll);
-	attitude_cmd.pitch = deg_to_rad(-rc->pitch);
-	if(heading_available == true) {
-		//yaw control mode
-		attitude_cmd.yaw = deg_to_rad(desired_heading);
-	} else {
-		//yaw rate control mode
-		attitude_cmd.yaw = deg_to_rad(-rc->yaw);
-	}
+	// euler_t attitude_cmd;
+	// attitude_cmd.roll = deg_to_rad(-rc->roll);
+	// attitude_cmd.pitch = deg_to_rad(-rc->pitch);
+	// if(heading_available == true) {
+	// 	//yaw control mode
+	// 	attitude_cmd.yaw = deg_to_rad(desired_heading);
+	// } else {
+	// 	//yaw rate control mode
+	// 	attitude_cmd.yaw = deg_to_rad(-rc->yaw);
+	// }
 
 	float control_moments[3] = {0.0f}, control_force = 0.0f;
 
-	if(rc->auto_flight == true && height_availabe && heading_available) {
-		if(xy_pos_available == false) {
-			height_ctrl_only = true;
-		}
+	// if(rc->auto_flight == true && height_availabe && heading_available) {
+	// 	if(xy_pos_available == false) {
+	// 		height_ctrl_only = true;
+	// 	}
 
-		/* auto-flight mode (position, velocity and attitude control) */
-		geometry_tracking_ctrl(&attitude_cmd, attitude_q, gyro,
-		                       pos_des_enu, vel_des_enu, accel_ff_enu,
-		                       curr_pos_ned, curr_vel_ned, control_moments,
-		                       &control_force, height_ctrl_only);
-	} else {
-		/* manual flight mode (attitude control only) */
-		geometry_manual_ctrl(&attitude_cmd, attitude_q, gyro, control_moments,
-		                     heading_available);
+	// 	/* auto-flight mode (position, velocity and attitude control) */
+	// 	geometry_tracking_ctrl(&attitude_cmd, attitude_q, gyro,
+	// 	                       pos_des_enu, vel_des_enu, accel_ff_enu,
+	// 	                       curr_pos_ned, curr_vel_ned, control_moments,
+	// 	                       &control_force, height_ctrl_only);
+	// } else {
+	// 	/* manual flight mode (attitude control only) */
+	// 	geometry_manual_ctrl(&attitude_cmd, attitude_q, gyro, control_moments,
+	// 	                     heading_available);
 
-		/* generate total thrust for quadrotor (open-loop) */
-		control_force = 4.0f * convert_motor_cmd_to_thrust(rc->throttle * 0.01 /* [%] */);
-	}
+	// 	/* generate total thrust for quadrotor (open-loop) */
+	// 	control_force = 4.0f * convert_motor_cmd_to_thrust(rc->throttle * 0.01 /* [%] */);
+	// }
 
+	control_force = 10;
+	control_moments[0] = 1;
+	control_moments[1] = 2;
+	control_moments[2] = 0;
+	
 	if(rc->safety == true) {
-		autopilot_assign_heading_target(attitude_yaw);
-		barometer_set_sea_level();
+		// autopilot_assign_heading_target(attitude_yaw);
+		// barometer_set_sea_level();
 		set_rgb_led_service_motor_lock_flag(true);
 	} else {
 		set_rgb_led_service_motor_lock_flag(false);
 	}
 
+
 	bool lock_motor = false;
 
-	//lock motor if throttle values is lower than 10% during manual flight
-	lock_motor |= check_motor_lock_condition(rc->throttle < 10.0f &&
-	                autopilot_get_mode() == AUTOPILOT_MANUAL_FLIGHT_MODE);
-	//lock motor if desired height is lower than threshold value in the takeoff mode
-	lock_motor |= check_motor_lock_condition(pos_des_enu[2] < 0.10f &&
-	                autopilot_get_mode() == AUTOPILOT_TAKEOFF_MODE);
-	//lock motor if current position is very close to ground in the hovering mode
-	lock_motor |= check_motor_lock_condition(curr_pos_enu[2] < 0.10f &&
-	                autopilot_get_mode() == AUTOPILOT_HOVERING_MODE);
-	//lock motor if motors are locked by autopilot
+	// //lock motor if throttle values is lower than 10% during manual flight
+	// lock_motor |= check_motor_lock_condition(rc->throttle < 10.0f &&
+	//                 autopilot_get_mode() == AUTOPILOT_MANUAL_FLIGHT_MODE);
+	// //lock motor if desired height is lower than threshold value in the takeoff mode
+	// lock_motor |= check_motor_lock_condition(pos_des_enu[2] < 0.10f &&
+	//                 autopilot_get_mode() == AUTOPILOT_TAKEOFF_MODE);
+	// //lock motor if current position is very close to ground in the hovering mode
+	// lock_motor |= check_motor_lock_condition(curr_pos_enu[2] < 0.10f &&
+	//                 autopilot_get_mode() == AUTOPILOT_HOVERING_MODE);
+	// //lock motor if motors are locked by autopilot
 	lock_motor |= check_motor_lock_condition(autopilot_get_mode() == AUTOPILOT_MOTOR_LOCKED_MODE);
 	//lock motor if radio safety botton is on
 	lock_motor |= check_motor_lock_condition(rc->safety == true);
