@@ -3,7 +3,7 @@
 
 #include "debug_link.h"
 
-#define VINS_MONO_SERIAL_MSG_SIZE 44
+#define VINS_MONO_SERIAL_MSG_SIZE 51
 
 typedef struct {
 	uint8_t id;
@@ -17,6 +17,11 @@ typedef struct {
 	/* orientation (quaternion) */
 	float q[4];
 
+	/*Distribution ({N, Moment R^3})*/
+	float distribution2[4];
+	float distribution3[4];
+	float distribution4[4];
+
 	float time_now;
 	float time_last;
 	float update_rate;
@@ -27,6 +32,7 @@ typedef struct {
 } vins_mono_t ;
 
 
+
 void vins_mono_init(int id);
 
 /* reception of vins-mon pose and velocity information */
@@ -34,11 +40,7 @@ int vins_mono_serial_decoder(uint8_t *buf);
 void vins_mono_isr_handler(uint8_t c);
 
 /* transmission of imu information for vins-mono */
-void send_vins_mono_imu_msg(void);
-void vins_mono_send_imu_200hz(void);
-
-/* vins-mono camera triggering */
-void vins_mono_camera_trigger_20hz(void);
+void send_vins_mono_command_msg(void);
 
 void vins_mono_update(void);
 bool vins_mono_available(void);

@@ -15,7 +15,7 @@
 #include "board_porting.h"
 #include "quaternion.h"
 
-#define VINS_MONO_IMU_MSG_SIZE 27
+#define VINS_MONO_IMU_MSG_SIZE 51
 #define VINS_MONO_CHECKSUM_INIT_VAL 19
 #define VINS_MONO_QUEUE_SIZE (44 * 100) //~400 packets
 
@@ -105,33 +105,29 @@ int vins_mono_serial_decoder(uint8_t *buf)
 {
 	uint8_t recv_checksum = buf[1];
 	uint8_t checksum = generate_vins_mono_checksum_byte(&buf[3], VINS_MONO_SERIAL_MSG_SIZE - 4);
-	int recv_id = buf[2];
-	if(checksum != recv_checksum || vins_mono.id != recv_id) {
+	if(checksum != recv_checksum) {
 		return 1; //error detected
 	}
 
 	vins_mono.time_now = get_sys_time_ms();
 
-	/* decode position (enu frame) */
-	memcpy(&vins_mono.pos_enu[0], &buf[3], sizeof(float));
-	memcpy(&vins_mono.pos_enu[1], &buf[7], sizeof(float));
-	memcpy(&vins_mono.pos_enu[2], &buf[11], sizeof(float));
+	/* decode UAV2 */
+	memcpy(&vins_mono.distribution2[0], &buf[2], sizeof(float));
+	memcpy(&vins_mono.distribution2[1], &buf[6], sizeof(float));
+	memcpy(&vins_mono.distribution2[2], &buf[10], sizeof(float));
+	memcpy(&vins_mono.distribution2[3], &buf[14], sizeof(float));
 
-	/* decode velocity (enu frame) */
-	memcpy(&vins_mono.vel_enu[0], &buf[15], sizeof(float));
-	memcpy(&vins_mono.vel_enu[1], &buf[19], sizeof(float));
-	memcpy(&vins_mono.vel_enu[2], &buf[23], sizeof(float));
+	/* decode UAV3 */
+	memcpy(&vins_mono.distribution3[0], &buf[18], sizeof(float));
+	memcpy(&vins_mono.distribution3[1], &buf[22], sizeof(float));
+	memcpy(&vins_mono.distribution3[2], &buf[26], sizeof(float));
+	memcpy(&vins_mono.distribution3[3], &buf[30], sizeof(float));
 
-	/* decode quaternion (ned frame) */
-	float q_enu[4];
-	memcpy(&q_enu[0], &buf[27], sizeof(float));
-	memcpy(&q_enu[1], &buf[31], sizeof(float));
-	memcpy(&q_enu[2], &buf[35], sizeof(float));
-	memcpy(&q_enu[3], &buf[39], sizeof(float));
-	vins_mono.q[0] =  q_enu[0];
-	vins_mono.q[1] =  q_enu[2];
-	vins_mono.q[2] =  q_enu[1];
-	vins_mono.q[3] = -q_enu[3];
+	/* decode UAV4 */
+	memcpy(&vins_mono.distribution4[0], &buf[34], sizeof(float));
+	memcpy(&vins_mono.distribution4[1], &buf[38], sizeof(float));
+	memcpy(&vins_mono.distribution4[2], &buf[42], sizeof(float));
+	memcpy(&vins_mono.distribution4[3], &buf[46], sizeof(float));
 
 	/* calculate update rate */
 	float received_period = (vins_mono.time_now - vins_mono.time_last) * 0.001;
@@ -239,17 +235,21 @@ void vins_mono_get_quaternion(float *q)
 	q[3] = vins_mono.q[3];
 }
 
-void send_vins_mono_imu_msg(void)
+void send_vins_mono_command_msg(void)
 {
 	/*+------------+----------+---------+---------+---------+--------+--------+--------+----------+
 	 *| start byte | checksum | accel_x | accel_y | accel_z | gyro_x | gyro_y | gyro_z | end byte |
 	 *+------------+----------+---------+---------+---------+--------+--------+--------+----------+*/
 
-	float accel[3] = {0.0f};
-	float gyro[3] = {0.0f};
+	// float accel[3] = {0.0f};
+	// float gyro[3] = {0.0f};
 
-	get_accel_lpf(accel);
-	get_gyro_lpf(gyro);
+	// get_accel_lpf(accel);
+	// get_gyro_lpf(gyro);
+	
+	float dis_command2[4] = {10.0f, 2.0f, 0.0f, 0.0f};
+	float dis_command3[4] = {10.0f, 5.0f, 0.0f, 0.0f};
+	float dis_command4[4] = {10.0f, 1.0f, 0.0f, 0.0f};
 
 	char msg_buf[VINS_MONO_IMU_MSG_SIZE] = {0};
 	int msg_pos = 0;
@@ -261,58 +261,41 @@ void send_vins_mono_imu_msg(void)
 	msg_pos += sizeof(uint8_t);
 
 	/* pack payloads */
-	memcpy(msg_buf + msg_pos, &accel[0], sizeof(float));
+	memcpy(msg_buf + msg_pos, &dis_command2[0], sizeof(float));
 	msg_pos += sizeof(float);
-	memcpy(msg_buf + msg_pos, &accel[1], sizeof(float));
+	memcpy(msg_buf + msg_pos, &dis_command2[1], sizeof(float));
 	msg_pos += sizeof(float);
-	memcpy(msg_buf + msg_pos, &accel[2], sizeof(float));
+	memcpy(msg_buf + msg_pos, &dis_command2[2], sizeof(float));
 	msg_pos += sizeof(float);
-	memcpy(msg_buf + msg_pos, &gyro[0], sizeof(float));
-	msg_pos += sizeof(float);
-	memcpy(msg_buf + msg_pos, &gyro[1], sizeof(float));
-	msg_pos += sizeof(float);
-	memcpy(msg_buf + msg_pos, &gyro[2], sizeof(float));
+	memcpy(msg_buf + msg_pos, &dis_command2[3], sizeof(float));
 	msg_pos += sizeof(float);
 
+	memcpy(msg_buf + msg_pos, &dis_command3[0], sizeof(float));
+	msg_pos += sizeof(float);
+	memcpy(msg_buf + msg_pos, &dis_command3[1], sizeof(float));
+	msg_pos += sizeof(float);
+	memcpy(msg_buf + msg_pos, &dis_command3[2], sizeof(float));
+	msg_pos += sizeof(float);
+	memcpy(msg_buf + msg_pos, &dis_command3[3], sizeof(float));
+	msg_pos += sizeof(float);
+
+	memcpy(msg_buf + msg_pos, &dis_command4[0], sizeof(float));
+	msg_pos += sizeof(float);
+	memcpy(msg_buf + msg_pos, &dis_command4[1], sizeof(float));
+	msg_pos += sizeof(float);
+	memcpy(msg_buf + msg_pos, &dis_command4[2], sizeof(float));
+	msg_pos += sizeof(float);
+	memcpy(msg_buf + msg_pos, &dis_command4[3], sizeof(float));
+	msg_pos += sizeof(float);
 	msg_buf[msg_pos] = '+'; //end byte
 	msg_pos += sizeof(uint8_t);
 
 	msg_buf[1] = generate_vins_mono_checksum_byte((uint8_t *)&msg_buf[3],
 	                VINS_MONO_IMU_MSG_SIZE - 3);
 
-	vins_mono_puts(msg_buf, VINS_MONO_IMU_MSG_SIZE);
+	uart7_puts(msg_buf, VINS_MONO_IMU_MSG_SIZE);
 }
 
-void vins_mono_send_imu_200hz(void)
-{
-	/* triggered every 2 times since the function is designed to be called by
-	 * flight control main loop (400Hz) */
-	static int prescaler = 2;
-	prescaler--;
-
-	if(prescaler == 0) {
-		send_vins_mono_imu_msg();
-		prescaler = 2;
-	}
-}
-
-void vins_mono_camera_trigger_20hz(void)
-{
-	/* to generate the camera trigger pulse:
-	 * (1/20Hz) / (1/400Hz) = 20 (flight control loop is 20x faster than what we need)
-	 * 10% on:  20 * 0.1 = 2times
-	 * 90% off: 20 * 0.9 = 18times*/
-
-	static int counter = 0;
-
-	if(counter < 2) {
-		camera_trigger_gpio_on();
-	} else {
-		camera_trigger_gpio_off();
-	}
-
-	counter = (counter + 1) % 20;
-}
 
 void send_vins_mono_position_debug_message(debug_msg_t *payload)
 {

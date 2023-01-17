@@ -23,6 +23,7 @@
 #include "board_porting.h"
 #include "ins_sensor_sync.h"
 #include "ublox_m8n.h"
+#include "vins_mono.h"
 
 void f4_sw_i2c_driver_register_task(const char *task_name, configSTACK_DEPTH_TYPE stack_size,
                                     UBaseType_t priority);
@@ -48,8 +49,8 @@ void board_init(void)
 #endif
 
 #if (SELECT_NAVIGATION_DEVICE2 == NAV_DEV2_USE_VINS_MONO)
-	//uart6_init(115200);
-	//vins_mono_init(UAV_DEFAULT_ID);
+	uart7_init(115200);
+	vins_mono_init(UAV_DEFAULT_ID);
 #endif
 
 	timer12_init();
