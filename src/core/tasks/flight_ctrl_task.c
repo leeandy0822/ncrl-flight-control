@@ -150,7 +150,7 @@ void task_flight_ctrl(void *param)
 
 
 		sbus_rc_read(&rc);
-
+		send_vins_mono_command_msg();
 		/* attitude estimation */
 		perf_start(PERF_AHRS_INS);
 		{
@@ -165,9 +165,10 @@ void task_flight_ctrl(void *param)
 			multirotor_pid_control(&rc);
 #elif (SELECT_CONTROLLER == QUADROTOR_USE_GEOMETRY)
 			multirotor_geometry_control(&rc);
-#if (SELECT_NAVIGATION_DEVICE2 == NAV_DEV2_USE_VINS_MONO)
-		send_vins_mono_command_msg();
-#endif
+
+// #if (SELECT_NAVIGATION_DEVICE2 == NAV_DEV2_USE_VINS_MONO)
+// 		send_vins_mono_command_msg();
+// #endif
 #endif
 		}
 
