@@ -2,7 +2,7 @@
 #define __PROJ_CONFIG_H__
 
 /* uav info */
-#define UAV_DEFAULT_ID 1 //vaild from 1~250 according to qgroundcontrol
+#define UAV_DEFAULT_ID 2 //vaild from 1~250 according to qgroundcontrol
 
 /* uav type */
 #define UAV_TYPE_QUADROTOR 1
@@ -65,6 +65,7 @@
 #define NAV_DEV2_NO_CONNECTION 1
 #define NAV_DEV2_USE_VINS_MONO 2
 #define SELECT_NAVIGATION_DEVICE2 NAV_DEV2_USE_VINS_MONO
+
 
 /* compass sensor option */
 #define ENABLE_MAGNETOMETER    0

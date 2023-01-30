@@ -46,6 +46,8 @@ void vins_mono_update(void);
 bool vins_mono_available(void);
 
 /* vins_mono getters */
+void vins_mono_get_id(uint8_t *id);
+void vins_mono_get_distribution_command(float *control_force, float *control_moments, uint8_t uav_id);
 void vins_mono_get_position_enu(float *pos);
 float vins_mono_get_position_enu_x(void);
 float vins_mono_get_position_enu_y(void);

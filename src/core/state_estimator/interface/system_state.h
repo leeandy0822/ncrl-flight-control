@@ -7,6 +7,9 @@ typedef struct {
 	int position_sensor;
 } sensor_manager_t;
 
+void get_uav_id(uint8_t *id);
+void get_distribution_command(float *control_force, float *control_moments, uint8_t uav_id);
+
 bool is_heading_available(void);
 bool is_xy_position_available(void);
 bool is_height_available(void);
@@ -20,6 +23,7 @@ void get_enu_position(float *pos);
 float get_enu_position_x(void);
 float get_enu_position_y(void);
 float get_enu_position_z(void);
+
 
 void get_enu_velocity(float *vel);
 float get_enu_velocity_x(void);

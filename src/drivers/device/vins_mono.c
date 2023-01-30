@@ -138,6 +138,38 @@ int vins_mono_serial_decoder(uint8_t *buf)
 	return 0;
 }
 
+void vins_mono_get_id(uint8_t *id)
+{
+	*id = vins_mono.id;
+}
+
+void vins_mono_get_distribution_command(float *control_force, float *control_moments, uint8_t uav_id)
+{
+	switch(uav_id){
+		case 2 : 
+			*control_force = vins_mono.distribution2[0];
+			control_moments[0] = vins_mono.distribution2[1];
+			control_moments[1] = vins_mono.distribution2[2];
+			control_moments[2] = vins_mono.distribution2[3];	
+			break;		
+		case 3 : 
+			*control_force = vins_mono.distribution3[0];
+			control_moments[0] = vins_mono.distribution3[1];
+			control_moments[1] = vins_mono.distribution3[2];
+			control_moments[2] = vins_mono.distribution3[3];	
+			break;
+		case 4 : 
+			*control_force = vins_mono.distribution4[0];
+			control_moments[0] = vins_mono.distribution4[1];
+			control_moments[1] = vins_mono.distribution4[2];
+			control_moments[2] = vins_mono.distribution4[3];	
+			break;
+		default:
+			return;
+	}
+}
+
+
 void vins_mono_get_position_enu(float *pos)
 {
 	pos[0] = vins_mono.pos_enu[0];

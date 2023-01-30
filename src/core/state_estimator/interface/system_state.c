@@ -66,6 +66,16 @@ void get_attitude_euler_angles(float *roll, float *pitch, float *yaw)
 	ins_ahrs_get_attitude_euler_angles(roll, pitch, yaw);
 }
 
+void get_uav_id(uint8_t *id)
+{
+	vins_mono_get_id(id);
+}
+
+void get_distribution_command(float *control_force, float *control_moments, uint8_t uav_id)
+{
+	vins_mono_get_distribution_command(control_force, control_moments, uav_id);
+}
+
 void get_attitude_quaternion(float *q)
 {
 	ins_ahrs_get_attitude_quaternion(q);
