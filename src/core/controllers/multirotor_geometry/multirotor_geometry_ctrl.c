@@ -64,6 +64,10 @@ MAT_ALLOC(kxex_kvev_mge3_mxd_dot_dot, 3, 1);
 MAT_ALLOC(b1d, 3, 1);
 MAT_ALLOC(b2d, 3, 1);
 MAT_ALLOC(b3d, 3, 1);
+MAT_ALLOC(w, 4, 1);
+MAT_ALLOC(H_I_2,16,16);
+MAT_ALLOC(A,4,16);
+MAT_ALLOC(A,4,16);
 
 float pos_error[3];
 float vel_error[3];
@@ -132,7 +136,10 @@ void geometry_ctrl_init(void)
 	MAT_INIT(b1d, 3, 1);
 	MAT_INIT(b2d, 3, 1);
 	MAT_INIT(b3d, 3, 1);
-
+	MAT_INIT(w,4,1);
+	MAT_INIT(H_I_2,16,16);
+	MAT_INIT(A,4,16);
+    
 	/* modify local variables when user change them via ground station */
 	set_sys_param_update_var_addr(MR_GEO_GAIN_ROLL_P, &krx);
 	set_sys_param_update_var_addr(MR_GEO_GAIN_ROLL_D, &kwx);
@@ -208,6 +215,61 @@ void geometry_ctrl_init(void)
 	                              coeff_cmd_to_thrust[3], coeff_cmd_to_thrust[4], coeff_cmd_to_thrust[5]);
 	set_motor_thrust_to_cmd_coeff(coeff_thrust_to_cmd[0], coeff_thrust_to_cmd[1], coeff_thrust_to_cmd[2],
 	                              coeff_thrust_to_cmd[3], coeff_thrust_to_cmd[4], coeff_thrust_to_cmd[5]);
+	
+	/* weight allocation 4x1*/
+	mat_data(w)[0] = 0.01f;
+	mat_data(w)[1] = 1.0f;
+	mat_data(w)[2] = 1.0f;
+	mat_data(w)[3] = 1.0f;
+
+	/*H^-2 inverse  matrix - diagonal of w 16x16*/
+	for(int i = 0 ; i < 16 ; i++){
+		mat_data(H_I_2)[i*16 + i] = (1/mat_data(w)[i%4])^2;
+	}
+
+	/*A matrix - allocation matrix 4x16*/
+	for(int i = 0 ; i < 4 ; i++){
+		mat_data(A)[i*16 + i] = 1;
+		mat_data(A)[i*16 + i + 4] = 1;
+		mat_data(A)[i*16 + i + 8] = 1;
+		mat_data(A)[i*16 + i + 12] = 1;
+	}
+
+	/* x and y coordinate*/
+	float uav1_pos[2] = {0.0f};
+	float uav2_pos[2] = {0.0f};
+	float uav3_pos[2] = {0.0f};
+	float uav4_pos[2] = {0.0f};
+
+	uav1_pos[0] = -0.5f;
+	uav2_pos[0] = 0.5f;
+	uav3_pos[1] = -0.5f;
+	uav4_pos[1] = 0.5f;
+
+	mat_data(A)[1*16 + 0]  =  uav1_pos[1];
+	mat_data(A)[2*16 + 0]  = -uav1_pos[0];
+	mat_data(A)[1*16 + 4]  =  uav2_pos[1];
+	mat_data(A)[2*16 + 4]  = -uav2_pos[0];
+	mat_data(A)[1*16 + 8]  =  uav3_pos[1];
+	mat_data(A)[2*16 + 8]  = -uav3_pos[0];
+	mat_data(A)[1*16 + 12] =  uav4_pos[1];
+	mat_data(A)[2*16 + 12] = -uav4_pos[0];	
+
+	//transpose(At)
+	MAT_INV(&A, &At);
+	// H^-2 * A^T
+	MAT_MULT(&H_I_2, &At, &H_I_2At);
+
+	// A * H^(-2)
+	MAT_MULT(&A, &H_I_2, &AH_I_2);
+	// A * H^(-2) * A^T
+	MAT_MULT(&AH_I_2, &At, &AH_I_2_At);
+	// Inverse(A * H^(-2) * A^T)
+	MAT_INV(&AH_I_2_At, &AH_I_2_At_I);
+
+	MAT_INV(M)
+
+
 }
 
 void estimate_uav_dynamics(float *gyro, float *moments, float *m_rot_frame)
@@ -492,6 +554,8 @@ void mr_geometry_ctrl_thrust_allocation(float *moment, float total_force)
 	set_motor_value(MOTOR4, convert_motor_thrust_to_cmd(motor_force[3]));
 }
 
+
+
 void rc_mode_handler_geometry_ctrl(radio_t *rc)
 {
 	static bool auto_flight_mode_last = false;
@@ -621,6 +685,11 @@ void multirotor_geometry_control(radio_t *rc)
 		/* generate total thrust for quadrotor (open-loop) */
 		control_force = 4.0f * convert_motor_cmd_to_thrust(rc->throttle * 0.01 /* [%] */);
 	}
+
+
+
+
+	/*Master to slave force allocation*/
 
 	if(rc->safety == true) {
 		autopilot_assign_heading_target(attitude_yaw);
