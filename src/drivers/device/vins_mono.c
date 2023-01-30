@@ -17,7 +17,7 @@
 
 #define VINS_MONO_IMU_MSG_SIZE 51
 #define VINS_MONO_CHECKSUM_INIT_VAL 19
-#define VINS_MONO_QUEUE_SIZE (44 * 100) //~400 packets
+#define VINS_MONO_QUEUE_SIZE (51 * 100) //~400 packets
 
 typedef struct {
 	char c;
@@ -89,7 +89,6 @@ void vins_mono_update(void)
 	vins_mono_buf_c_t recept_c;
 	while(xQueueReceive(vins_mono_queue, &recept_c, 0) == pdTRUE) {
 		uint8_t c = recept_c.c;
-
 		vins_mono_buf_push(c);
 		if(c == '+' && vins_mono.buf[0] == '@') {
 			/* decode vins_mono message */
@@ -104,7 +103,7 @@ void vins_mono_update(void)
 int vins_mono_serial_decoder(uint8_t *buf)
 {
 	uint8_t recv_checksum = buf[1];
-	uint8_t checksum = generate_vins_mono_checksum_byte(&buf[3], VINS_MONO_SERIAL_MSG_SIZE - 4);
+	uint8_t checksum = generate_vins_mono_checksum_byte(&buf[3], VINS_MONO_SERIAL_MSG_SIZE - 3);
 	if(checksum != recv_checksum) {
 		return 1; //error detected
 	}
