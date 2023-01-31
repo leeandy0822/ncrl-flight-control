@@ -17,6 +17,10 @@ sensor_manager_t sensor_manager = {
 	.position_sensor = SELECT_POSITION_SENSOR
 };
 
+void assign_command_msg(float *command2, float *command3, float *command4){
+	assign_vins_mono_command_msg(command2, command3,  command4);
+}
+
 bool is_heading_available(void)
 {
 	switch(sensor_manager.heading_sensor) {

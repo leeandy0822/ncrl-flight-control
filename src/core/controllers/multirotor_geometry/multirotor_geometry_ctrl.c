@@ -67,7 +67,14 @@ MAT_ALLOC(b3d, 3, 1);
 MAT_ALLOC(w, 4, 1);
 MAT_ALLOC(H_I_2,16,16);
 MAT_ALLOC(A,4,16);
-MAT_ALLOC(A,4,16);
+MAT_ALLOC(At,16,4);
+MAT_ALLOC(AH_I_2,4,16);
+MAT_ALLOC(H_I_2At,16,4);
+MAT_ALLOC(AH_I_2_At,4,4);
+MAT_ALLOC(AH_I_2_At_I,4,4);
+MAT_ALLOC(DIS_M,16,4);
+MAT_ALLOC(CONTROL_OUTPUT, 4, 1);
+MAT_ALLOC(DIS_OUTPUT, 16, 1);
 
 float pos_error[3];
 float vel_error[3];
@@ -136,10 +143,19 @@ void geometry_ctrl_init(void)
 	MAT_INIT(b1d, 3, 1);
 	MAT_INIT(b2d, 3, 1);
 	MAT_INIT(b3d, 3, 1);
-	MAT_INIT(w,4,1);
+
+	MAT_INIT(w, 4, 1);
 	MAT_INIT(H_I_2,16,16);
 	MAT_INIT(A,4,16);
-    
+	MAT_INIT(At,16,4);
+	MAT_INIT(H_I_2At,16,4);
+	MAT_INIT(AH_I_2,4,16);
+	MAT_INIT(AH_I_2_At,4,4);
+	MAT_INIT(AH_I_2_At_I,4,4);
+	MAT_INIT(DIS_M,16,4);
+	MAT_INIT(CONTROL_OUTPUT,4,1);
+	MAT_INIT(DIS_OUTPUT, 16, 1);
+
 	/* modify local variables when user change them via ground station */
 	set_sys_param_update_var_addr(MR_GEO_GAIN_ROLL_P, &krx);
 	set_sys_param_update_var_addr(MR_GEO_GAIN_ROLL_D, &kwx);
@@ -224,15 +240,15 @@ void geometry_ctrl_init(void)
 
 	/*H^-2 inverse  matrix - diagonal of w 16x16*/
 	for(int i = 0 ; i < 16 ; i++){
-		mat_data(H_I_2)[i*16 + i] = (1/mat_data(w)[i%4])^2;
+		mat_data(H_I_2)[i*16 + i] = (1/mat_data(w)[i%4])* (1/mat_data(w)[i%4]);
 	}
 
 	/*A matrix - allocation matrix 4x16*/
 	for(int i = 0 ; i < 4 ; i++){
-		mat_data(A)[i*16 + i] = 1;
-		mat_data(A)[i*16 + i + 4] = 1;
-		mat_data(A)[i*16 + i + 8] = 1;
-		mat_data(A)[i*16 + i + 12] = 1;
+		mat_data(A)[i*16 + i] = 1.0f;
+		mat_data(A)[i*16 + i + 4] = 1.0f;
+		mat_data(A)[i*16 + i + 8] = 1.0f;
+		mat_data(A)[i*16 + i + 12] = 1.0f;
 	}
 
 	/* x and y coordinate*/
@@ -241,33 +257,36 @@ void geometry_ctrl_init(void)
 	float uav3_pos[2] = {0.0f};
 	float uav4_pos[2] = {0.0f};
 
-	uav1_pos[0] = -0.5f;
-	uav2_pos[0] = 0.5f;
-	uav3_pos[1] = -0.5f;
-	uav4_pos[1] = 0.5f;
+	uav1_pos[1] = -0.5f;
+	uav2_pos[1] = 0.5f;
+	uav3_pos[0] = 0.5f;
+	uav4_pos[0] = -0.5f;
 
-	mat_data(A)[1*16 + 0]  =  uav1_pos[1];
-	mat_data(A)[2*16 + 0]  = -uav1_pos[0];
-	mat_data(A)[1*16 + 4]  =  uav2_pos[1];
-	mat_data(A)[2*16 + 4]  = -uav2_pos[0];
-	mat_data(A)[1*16 + 8]  =  uav3_pos[1];
-	mat_data(A)[2*16 + 8]  = -uav3_pos[0];
-	mat_data(A)[1*16 + 12] =  uav4_pos[1];
-	mat_data(A)[2*16 + 12] = -uav4_pos[0];	
+	mat_data(A)[1*16 + 0]  =  -uav1_pos[1];
+	mat_data(A)[2*16 + 0]  =   uav1_pos[0];
+	mat_data(A)[1*16 + 4]  =  -uav2_pos[1];
+	mat_data(A)[2*16 + 4]  =   uav2_pos[0];
+	mat_data(A)[1*16 + 8]  =  -uav3_pos[1];
+	mat_data(A)[2*16 + 8]  =   uav3_pos[0];
+	mat_data(A)[1*16 + 12] =  -uav4_pos[1];
+	mat_data(A)[2*16 + 12] =   uav4_pos[0];	
 
-	//transpose(At)
-	MAT_INV(&A, &At);
-	// H^-2 * A^T
+	//transpose(At) 4 x 16 -> 16 x 4
+	MAT_TRANS(&A, &At);
+	// H^-2 * A^T  16x16 * 16x4 -> 16x4
 	MAT_MULT(&H_I_2, &At, &H_I_2At);
 
-	// A * H^(-2)
+	// A * H^(-2) 4*16 * 16x16 -> 4x16
 	MAT_MULT(&A, &H_I_2, &AH_I_2);
-	// A * H^(-2) * A^T
+	
+	// A * H^(-2) * A^T -> 4x16 * 16x4 -> 4x4 
 	MAT_MULT(&AH_I_2, &At, &AH_I_2_At);
-	// Inverse(A * H^(-2) * A^T)
+
+	// Inverse(A * H^(-2) * A^T) -> 4x4
 	MAT_INV(&AH_I_2_At, &AH_I_2_At_I);
 
-	MAT_INV(M)
+	// Final  16x4 * 4x4 -> 16x4
+	MAT_MULT(&H_I_2At, &AH_I_2_At_I, &DIS_M);
 
 
 }
@@ -554,7 +573,19 @@ void mr_geometry_ctrl_thrust_allocation(float *moment, float total_force)
 	set_motor_value(MOTOR4, convert_motor_thrust_to_cmd(motor_force[3]));
 }
 
+void multi_uav_geometry_ctrl_thrust_allocation(float *dis_control_outputs, float *moment, float total_force)
+{	
+	/*CONTROL_OUTPUT 4 x 1 */
+	mat_data(CONTROL_OUTPUT)[0] = total_force;
+	mat_data(CONTROL_OUTPUT)[1] = moment[0];
+	mat_data(CONTROL_OUTPUT)[2] = moment[1];
+	mat_data(CONTROL_OUTPUT)[3] = moment[2];
+	MAT_MULT(&DIS_M, &CONTROL_OUTPUT, &DIS_OUTPUT);
+	for(int i = 0 ; i < 16 ; i ++){
+		dis_control_outputs[i] = mat_data(DIS_OUTPUT)[i];
+	}
 
+}
 
 void rc_mode_handler_geometry_ctrl(radio_t *rc)
 {
@@ -684,6 +715,7 @@ void multirotor_geometry_control(radio_t *rc)
 
 		/* generate total thrust for quadrotor (open-loop) */
 		control_force = 4.0f * convert_motor_cmd_to_thrust(rc->throttle * 0.01 /* [%] */);
+	
 	}
 
 
@@ -715,8 +747,32 @@ void multirotor_geometry_control(radio_t *rc)
 	//lock motor if radio safety botton is on
 	lock_motor |= check_motor_lock_condition(rc->safety == true);
 
+	/* Below part is the modified part for multiuav transportation 	*/
+
+	float dis_control_output[16] = {0.0f};
+	float moment1[4] = {0.0f}, force1 = 0.0f;
+	float command2[4]={0.0f}, command3[4]={0.0f}, command4[4]={0.0f};
+
+	/*dis_control_output : 16 x 1 matrix for 4 x (4 x 1) control output for 4 UAVs*/
+	multi_uav_geometry_ctrl_thrust_allocation(dis_control_output, control_moments, control_force);
+
+	/*UAV1 control input*/
+	force1     = dis_control_output[0];
+	moment1[0] = dis_control_output[1];
+	moment1[1] = dis_control_output[2];
+	moment1[2] = dis_control_output[3];
+
+	/*Distribution for uav2, uav3, uav4*/
+	command2[0] = dis_control_output[4];  command2[1] = dis_control_output[5];
+	command2[2] = dis_control_output[6];  command2[3] = dis_control_output[7];
+	command3[0] = dis_control_output[8];  command3[1] = dis_control_output[9];
+	command3[2] = dis_control_output[10]; command3[3] = dis_control_output[11];
+	command4[0] = dis_control_output[12]; command4[1] = dis_control_output[13];
+	command4[2] = dis_control_output[14]; command4[3] = dis_control_output[15];
+	assign_command_msg(command2, command3, command4);
+
 	if(lock_motor == false) {
-		mr_geometry_ctrl_thrust_allocation(control_moments, control_force);
+		mr_geometry_ctrl_thrust_allocation(moment1, force1);
 	} else {
 		motor_halt();
 	}

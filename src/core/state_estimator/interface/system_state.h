@@ -7,6 +7,7 @@ typedef struct {
 	int position_sensor;
 } sensor_manager_t;
 
+void assign_command_msg(float *command2, float *command3, float *command4);
 bool is_heading_available(void);
 bool is_xy_position_available(void);
 bool is_height_available(void);

@@ -239,6 +239,24 @@ void vins_mono_get_quaternion(float *q)
 	q[3] = vins_mono.q[3];
 }
 
+void assign_vins_mono_command_msg(float *command2, float *command3, float *command4){
+
+	vins_mono.dis_command2[0] = command2[0];
+	vins_mono.dis_command2[1] = command2[1];
+	vins_mono.dis_command2[2] = command2[2];
+	vins_mono.dis_command2[3] = command2[3];
+
+	vins_mono.dis_command3[0] = command3[0];
+	vins_mono.dis_command3[1] = command3[1];
+	vins_mono.dis_command3[2] = command3[2];
+	vins_mono.dis_command3[3] = command3[3];
+
+	vins_mono.dis_command4[0] = command4[0];
+	vins_mono.dis_command4[1] = command4[1];
+	vins_mono.dis_command4[2] = command4[2];
+	vins_mono.dis_command4[3] = command4[3];
+}
+
 void send_vins_mono_command_msg(void)
 {
 	/*+------------+----------+---------+---------+---------+--------+--------+--------+----------+
@@ -251,9 +269,9 @@ void send_vins_mono_command_msg(void)
 	// get_accel_lpf(accel);
 	// get_gyro_lpf(gyro);
 	
-	float dis_command2[4] = {10.0f, 2.0f, 0.0f, 0.0f};
-	float dis_command3[4] = {10.0f, 5.0f, 0.0f, 0.0f};
-	float dis_command4[4] = {10.0f, 1.0f, 0.0f, 0.0f};
+	// float dis_command2[4] = {10.0f, 2.0f, 0.0f, 0.0f};
+	// float dis_command3[4] = {10.0f, 5.0f, 0.0f, 0.0f};
+	// float dis_command4[4] = {10.0f, 1.0f, 0.0f, 0.0f};
 
 	char msg_buf[VINS_MONO_IMU_MSG_SIZE] = {0};
 	int msg_pos = 0;
@@ -265,31 +283,31 @@ void send_vins_mono_command_msg(void)
 	msg_pos += sizeof(uint8_t);
 
 	/* pack payloads */
-	memcpy(msg_buf + msg_pos, &dis_command2[0], sizeof(float));
+	memcpy(msg_buf + msg_pos, &vins_mono.dis_command2[0], sizeof(float));
 	msg_pos += sizeof(float);
-	memcpy(msg_buf + msg_pos, &dis_command2[1], sizeof(float));
+	memcpy(msg_buf + msg_pos, &vins_mono.dis_command2[1], sizeof(float));
 	msg_pos += sizeof(float);
-	memcpy(msg_buf + msg_pos, &dis_command2[2], sizeof(float));
+	memcpy(msg_buf + msg_pos, &vins_mono.dis_command2[2], sizeof(float));
 	msg_pos += sizeof(float);
-	memcpy(msg_buf + msg_pos, &dis_command2[3], sizeof(float));
-	msg_pos += sizeof(float);
-
-	memcpy(msg_buf + msg_pos, &dis_command3[0], sizeof(float));
-	msg_pos += sizeof(float);
-	memcpy(msg_buf + msg_pos, &dis_command3[1], sizeof(float));
-	msg_pos += sizeof(float);
-	memcpy(msg_buf + msg_pos, &dis_command3[2], sizeof(float));
-	msg_pos += sizeof(float);
-	memcpy(msg_buf + msg_pos, &dis_command3[3], sizeof(float));
+	memcpy(msg_buf + msg_pos, &vins_mono.dis_command2[3], sizeof(float));
 	msg_pos += sizeof(float);
 
-	memcpy(msg_buf + msg_pos, &dis_command4[0], sizeof(float));
+	memcpy(msg_buf + msg_pos, &vins_mono.dis_command3[0], sizeof(float));
 	msg_pos += sizeof(float);
-	memcpy(msg_buf + msg_pos, &dis_command4[1], sizeof(float));
+	memcpy(msg_buf + msg_pos, &vins_mono.dis_command3[1], sizeof(float));
 	msg_pos += sizeof(float);
-	memcpy(msg_buf + msg_pos, &dis_command4[2], sizeof(float));
+	memcpy(msg_buf + msg_pos, &vins_mono.dis_command3[2], sizeof(float));
 	msg_pos += sizeof(float);
-	memcpy(msg_buf + msg_pos, &dis_command4[3], sizeof(float));
+	memcpy(msg_buf + msg_pos, &vins_mono.dis_command3[3], sizeof(float));
+	msg_pos += sizeof(float);
+
+	memcpy(msg_buf + msg_pos, &vins_mono.dis_command4[0], sizeof(float));
+	msg_pos += sizeof(float);
+	memcpy(msg_buf + msg_pos, &vins_mono.dis_command4[1], sizeof(float));
+	msg_pos += sizeof(float);
+	memcpy(msg_buf + msg_pos, &vins_mono.dis_command4[2], sizeof(float));
+	msg_pos += sizeof(float);
+	memcpy(msg_buf + msg_pos, &vins_mono.dis_command4[3], sizeof(float));
 	msg_pos += sizeof(float);
 	msg_buf[msg_pos] = '+'; //end byte
 	msg_pos += sizeof(uint8_t);

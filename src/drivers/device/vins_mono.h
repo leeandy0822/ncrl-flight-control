@@ -14,6 +14,10 @@ typedef struct {
 	/* velocity [m/s] */
 	float vel_enu[3];
 
+	float dis_command2[4];
+	float dis_command3[4];
+	float dis_command4[4];
+
 	/* orientation (quaternion) */
 	float q[4];
 
@@ -28,6 +32,9 @@ typedef struct {
 
 
 void vins_mono_init(int id);
+
+/*assign other slaves uav command */
+void assign_vins_mono_command_msg(float *command2, float *command3, float *command4);
 
 /* reception of vins-mon pose and velocity information */
 int vins_mono_serial_decoder(uint8_t *buf);
