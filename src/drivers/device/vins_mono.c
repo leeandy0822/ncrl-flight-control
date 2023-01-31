@@ -239,22 +239,23 @@ void vins_mono_get_quaternion(float *q)
 	q[3] = vins_mono.q[3];
 }
 
-void assign_vins_mono_command_msg(float *command2, float *command3, float *command4){
+void assign_vins_mono_command_msg(float *dis_command){
 
-	vins_mono.dis_command2[0] = command2[0];
-	vins_mono.dis_command2[1] = command2[1];
-	vins_mono.dis_command2[2] = command2[2];
-	vins_mono.dis_command2[3] = command2[3];
+	vins_mono.dis_command2[0] = dis_command[4];
+	vins_mono.dis_command2[1] = dis_command[5];
+	vins_mono.dis_command2[2] = dis_command[6];
+	vins_mono.dis_command2[3] = dis_command[7];
 
-	vins_mono.dis_command3[0] = command3[0];
-	vins_mono.dis_command3[1] = command3[1];
-	vins_mono.dis_command3[2] = command3[2];
-	vins_mono.dis_command3[3] = command3[3];
+	vins_mono.dis_command3[0] = dis_command[8];
+	vins_mono.dis_command3[1] = dis_command[9];
+	vins_mono.dis_command3[2] = dis_command[10];
+	vins_mono.dis_command3[3] = dis_command[11];
 
-	vins_mono.dis_command4[0] = command4[0];
-	vins_mono.dis_command4[1] = command4[1];
-	vins_mono.dis_command4[2] = command4[2];
-	vins_mono.dis_command4[3] = command4[3];
+	vins_mono.dis_command4[0] = dis_command[12];
+	vins_mono.dis_command4[1] = dis_command[13];
+	vins_mono.dis_command4[2] = dis_command[14];
+	vins_mono.dis_command4[3] = dis_command[15];
+
 }
 
 void send_vins_mono_command_msg(void)

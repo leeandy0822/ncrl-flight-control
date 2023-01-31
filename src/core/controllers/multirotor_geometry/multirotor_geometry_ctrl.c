@@ -715,6 +715,8 @@ void multirotor_geometry_control(radio_t *rc)
 
 		/* generate total thrust for quadrotor (open-loop) */
 		control_force = 4.0f * convert_motor_cmd_to_thrust(rc->throttle * 0.01 /* [%] */);
+		/* four uav*/
+		control_force = 4 * control_force ;
 	
 	}
 
@@ -751,7 +753,6 @@ void multirotor_geometry_control(radio_t *rc)
 
 	float dis_control_output[16] = {0.0f};
 	float moment1[4] = {0.0f}, force1 = 0.0f;
-	float command2[4]={0.0f}, command3[4]={0.0f}, command4[4]={0.0f};
 
 	/*dis_control_output : 16 x 1 matrix for 4 x (4 x 1) control output for 4 UAVs*/
 	multi_uav_geometry_ctrl_thrust_allocation(dis_control_output, control_moments, control_force);
@@ -763,13 +764,8 @@ void multirotor_geometry_control(radio_t *rc)
 	moment1[2] = dis_control_output[3];
 
 	/*Distribution for uav2, uav3, uav4*/
-	command2[0] = dis_control_output[4];  command2[1] = dis_control_output[5];
-	command2[2] = dis_control_output[6];  command2[3] = dis_control_output[7];
-	command3[0] = dis_control_output[8];  command3[1] = dis_control_output[9];
-	command3[2] = dis_control_output[10]; command3[3] = dis_control_output[11];
-	command4[0] = dis_control_output[12]; command4[1] = dis_control_output[13];
-	command4[2] = dis_control_output[14]; command4[3] = dis_control_output[15];
-	assign_command_msg(command2, command3, command4);
+	assign_command_msg(dis_control_output);
+
 
 	if(lock_motor == false) {
 		mr_geometry_ctrl_thrust_allocation(moment1, force1);

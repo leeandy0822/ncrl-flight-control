@@ -34,7 +34,7 @@ typedef struct {
 void vins_mono_init(int id);
 
 /*assign other slaves uav command */
-void assign_vins_mono_command_msg(float *command2, float *command3, float *command4);
+void assign_vins_mono_command_msg(float *dis_command);
 
 /* reception of vins-mon pose and velocity information */
 int vins_mono_serial_decoder(uint8_t *buf);
