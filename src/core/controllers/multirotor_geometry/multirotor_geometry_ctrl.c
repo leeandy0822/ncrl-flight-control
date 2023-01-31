@@ -573,7 +573,7 @@ void multirotor_geometry_control(radio_t *rc)
 	bool lock_motor = false;
 
 	// //lock motor if throttle values is lower than 10% during manual flight
-	lock_motor |= check_motor_lock_condition(control_force < 2.0f &&
+	lock_motor |= check_motor_lock_condition(rc->throttle < 10.0f &&
 	                autopilot_get_mode() == AUTOPILOT_MANUAL_FLIGHT_MODE);
 	// //lock motor if desired height is lower than threshold value in the takeoff mode
 	// lock_motor |= check_motor_lock_condition(pos_des_enu[2] < 0.10f &&
