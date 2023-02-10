@@ -4,6 +4,7 @@
 /* uav info */
 #define UAV_DEFAULT_ID 1 //vaild from 1~250 according to qgroundcontrol
 
+
 /* uav type */
 #define UAV_TYPE_QUADROTOR 1
 #define SELECT_UAV_TYPE UAV_TYPE_QUADROTOR
@@ -51,6 +52,12 @@
 #define QUADROTOR_USE_GEOMETRY 2
 #define SELECT_CONTROLLER QUADROTOR_USE_GEOMETRY
 
+
+/* quadrotor control estimator*/
+#define NONE 1
+#define ADAPTIVE 2
+#define CL 3
+#define SELECT_CONTROLLER_ESTIMATOR CL
 /*===================*
  * hardware settings *
  *===================*/
