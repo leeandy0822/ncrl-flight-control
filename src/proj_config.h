@@ -4,6 +4,26 @@
 /* uav info */
 #define UAV_DEFAULT_ID 1 //vaild from 1~250 according to qgroundcontrol
 
+/* uav mode*/
+#define TRANSPORTATION 1
+#define SINGLE_UAV 2
+#define SELECT_UAV_MISSION SINGLE_UAV
+
+/*Controller type*/
+
+/* Force Controller*/
+#define FORCE_EMK 1
+#define FORCE_ADAPTIVE 2 
+#define SELECT_FORCE_CONTROLLER_ESTIMATOR FORCE_EMK
+#define FORCE_ADAPTIVE_WITHOUT_ICL 1
+#define FORCE_ADAPTIVE_WITH_ICL 2
+#define SELECT_FORCE_ADAPTIVE_W_WO_ICL  FORCE_ADAPTIVE_WITHOUT_ICL
+
+/* Moment Controller*/
+#define MOMENT_EMK 1 
+#define MOMENT_ADAPTIVE 2
+#define MOMENT_ICL 2
+#define SELECT_MOMENT_CONTROLLER_ESTIMATOR MOMENT_EMK
 
 /* uav type */
 #define UAV_TYPE_QUADROTOR 1
