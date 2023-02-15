@@ -659,6 +659,25 @@ class serial_plotter_class:
             self.create_curve('P norm', 'blue')
             self.show_subplot()
 
+
+        elif (message_id == 38):
+            plt.subplot(311)
+            plt.ylabel('eR')
+            plt.ylim([-100, 100])
+            self.create_curve('Rx', 'blue')
+            self.create_curve('Ry', 'orange')
+            self.create_curve('Rz', 'green')
+            plt.subplot(312)
+            plt.ylabel('CL Mass')
+            plt.ylim([0, 1])
+            self.create_curve('Mass', 'green')
+            plt.subplot(313)
+            plt.ylabel('CL CoG')
+            plt.ylim([-1, 1])
+            self.create_curve('X', 'blue')
+            self.create_curve('Y', 'orange')
+            self.show_subplot()
+
     def show_graph(self):
         ani = animation.FuncAnimation(self.figure, self.animate, np.arange(0, 200),
                                       interval=0, blit=True)
