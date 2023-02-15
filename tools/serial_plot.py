@@ -17,7 +17,7 @@ ser = serial.Serial(
     bytesize=serial.EIGHTBITS,
     timeout=100)
 
-save_csv = False
+save_csv = True
 csv_file = 'serial_log.csv'
 
 if save_csv == True:
@@ -659,24 +659,32 @@ class serial_plotter_class:
             self.create_curve('P norm', 'blue')
             self.show_subplot()
 
-
         elif (message_id == 38):
-            plt.subplot(311)
-            plt.ylabel('eR')
+            plt.subplot(411)
+            plt.ylabel('Force')
             plt.ylim([-100, 100])
-            self.create_curve('Rx', 'blue')
-            self.create_curve('Ry', 'orange')
-            self.create_curve('Rz', 'green')
-            plt.subplot(312)
+            self.create_curve('Fx', 'blue')
+            self.create_curve('Fy', 'orange')
+            self.create_curve('Fz', 'green')
+            plt.subplot(412)
+            self.create_curve('Mx', 'blue')
+            self.create_curve('My', 'orange')
+            self.create_curve('Mz', 'green')
             plt.ylabel('CL Mass')
             plt.ylim([0, 1])
+
+            plt.subplot(413)
             self.create_curve('Mass', 'green')
-            plt.subplot(313)
+            self.create_curve('Mass_adaptive', 'green')
+            self.create_curve('Mass_cl', 'green')
+            plt.subplot(414)
             plt.ylabel('CL CoG')
             plt.ylim([-1, 1])
             self.create_curve('X', 'blue')
             self.create_curve('Y', 'orange')
+            self.create_curve('Cog_adaptive', 'green')
             self.show_subplot()
+
 
     def show_graph(self):
         ani = animation.FuncAnimation(self.figure, self.animate, np.arange(0, 200),
