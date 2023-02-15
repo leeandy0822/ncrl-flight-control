@@ -23,6 +23,7 @@
 #include "barometer.h"
 #include "compass.h"
 #include "sys_param.h"
+#include "sys_time.h"
 #include "led.h"
 #include "waypoint_following.h"
 #include "fence.h"
@@ -1332,4 +1333,29 @@ void send_uav_dynamics_debug(debug_msg_t *payload)
 	pack_debug_debug_message_float(&uav_dynamics_m_rot_frame[0], payload);
 	pack_debug_debug_message_float(&uav_dynamics_m_rot_frame[1], payload);
 	pack_debug_debug_message_float(&uav_dynamics_m_rot_frame[2], payload);
+}
+
+
+void send_controller_estimation_adaptive_debug(debug_msg_t *payload)
+{
+	float roll_error = rad_to_deg(mat_data(eR)[0]);
+	float pitch_error = rad_to_deg(mat_data(eR)[1]);
+	float yaw_error = rad_to_deg(mat_data(eR)[2]);
+	
+	float mass = mat_data(theta_m_hat)[0];
+	float cogX = mat_data(theta)[0];
+	float cogY = mat_data(theta)[1];
+	
+	float time_now = get_sys_time_s();
+
+	pack_debug_debug_message_header(payload, MESSAGE_ID_ADAPTIVE_THETA);
+	pack_debug_debug_message_float(&roll_error, payload);
+	pack_debug_debug_message_float(&pitch_error, payload);
+	pack_debug_debug_message_float(&yaw_error, payload);
+
+	pack_debug_debug_message_float(&mass, payload);
+	pack_debug_debug_message_float(&cogX, payload);
+	pack_debug_debug_message_float(&cogY, payload);
+
+	pack_debug_debug_message_float(&time_now, payload);
 }
