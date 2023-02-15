@@ -37,6 +37,7 @@
  * telemetry system settings *
  *===========================*/
 
+
 /* telemetry main channel protocols */
 #define TELEM_MAVLINK    1
 #define SELECT_MAIN_TELEM TELEM_MAVLINK
@@ -77,7 +78,7 @@
 #define NONE 1
 #define ADAPTIVE 2
 #define CL 3
-#define SELECT_CONTROLLER_ESTIMATOR CL
+#define SELECT_CONTROLLER_ESTIMATOR NONE
 /*===================*
  * hardware settings *
  *===================*/
