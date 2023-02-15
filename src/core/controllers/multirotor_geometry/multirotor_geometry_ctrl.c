@@ -128,11 +128,9 @@ float uav_mass;
 float uav_dynamics_m[3] = {0.0f};
 // M_rot = (J * W_dot)
 float uav_dynamics_m_rot_frame[3] = {0.0f};
-
 float coeff_cmd_to_thrust[6] = {0.0f};
 float coeff_thrust_to_cmd[6] = {0.0f};
 float motor_thrust_max = 0.0f;
-
 bool height_ctrl_only = false;
 
 /* Force ICL and Adaptive gain*/
@@ -146,10 +144,10 @@ float mat_m_sum = 0.0f;
 /* Moment ICL and Adaptive gain*/
 int ICL_sigma_index = 0;
 ICL_sigma sigma_array[ICL_N];
-float adaptive_gamma[8] = {0.0000085, 0.0000085, 0.0000085, 0.0000085, 0.0000085, 0.0000085, 0.0000085, 0.0000085};
+float adaptive_gamma[8] = {0.0000006, 0.0000006, 0.0000006, 0.0000006, 0.0000006, 0.0000006, 0.0000006, 0.0000006};
 float c2 = 1; 
 float output_force_last = 0;
-float k_icl[8] = {7500, 7500, 7500, 7500, 7500, 7500, 7500, 7500}; // ICL 5
+float k_icl[8] = {0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01}; 
 float adaptive_gamma_k_icl[8];
 
 
@@ -324,6 +322,7 @@ void geometry_ctrl_init(void)
 	//      0    0.2315         0         0
 	//      0         0    0.2222         0
 	//      0         0         0    0.2500
+
 	mat_data(DIS_M)[4 * 0 + 0] = 0.25f;
 	mat_data(DIS_M)[4 * 0 + 1] = -0.0926f;
 	mat_data(DIS_M)[4 * 1 + 1] = 0.2315f;
@@ -377,8 +376,8 @@ void geometry_ctrl_init(void)
 
 	// Moment
 	MAT_INIT(theta, 8, 1);
-	mat_data(theta)[0] = 0.0f;
-	mat_data(theta)[1] = 0.005f;
+	mat_data(theta)[0] = 0.005f;
+	mat_data(theta)[1] = 0.0f;
 	mat_data(theta)[2] = 0.015f;
 	mat_data(theta)[3] = 0.015f;
 	mat_data(theta)[4] = 0.03f;
@@ -790,14 +789,14 @@ void geometry_tracking_ctrl(euler_t *rc, float *attitude_q, float *gyro, float *
 	mat_data(inertia_effect)[2] = mat_data(WJW)[2];
 
 	/* ICL controller */
-#if (SELECT_MOMENT_CONTROLLER_ESTIMATOR == NONE)
+#if (SELECT_MOMENT_CONTROLLER_ESTIMATOR == MOMENT_EMK)
 
 	/* control input M1, M2, M3 */
 	output_moments[0] = -krx * mat_data(eR)[0] - kwx * mat_data(eW)[0] + mat_data(inertia_effect)[0];
 	output_moments[1] = -kry * mat_data(eR)[1] - kwy * mat_data(eW)[1] + mat_data(inertia_effect)[1];
 	output_moments[2] = -krz * mat_data(eR)[2] - kwz * mat_data(eW)[2] + mat_data(inertia_effect)[2];
 
-#elif (SELECT_MOMENT_CONTROLLER_ESTIMATOR == ADAPTIVE)
+#elif (SELECT_MOMENT_CONTROLLER_ESTIMATOR == MOMENT_ADAPTIVE)
 	/*adaptive*/
 	// Y1 of Y
 	//  [0	-f	]
@@ -1354,7 +1353,9 @@ void send_controller_estimation_adaptive_debug(debug_msg_t *payload)
 	float moment_x = mat_data(M_last)[0];
 	float moment_y = mat_data(M_last)[0];
 	float moment_z = mat_data(M_last)[0];
-	float moment_adaptive = mat_data(theta_hat_dot)[0];
+	float moment_adaptive_x = mat_data(theta_hat_dot)[0];
+	float icl_adaptive_moment_x = mat_data(adaptive_theta_hat_dot)[0];
+	float icl_moment_x = mat_data(ICL_theta_hat_dot)[0];
 
 	float time_now = get_sys_time_s();
 
@@ -1373,7 +1374,9 @@ void send_controller_estimation_adaptive_debug(debug_msg_t *payload)
 
 	pack_debug_debug_message_float(&cogX, payload);
 	pack_debug_debug_message_float(&cogY, payload);
-	pack_debug_debug_message_float(&moment_adaptive, payload);
+	pack_debug_debug_message_float(&moment_adaptive_x, payload);
+	pack_debug_debug_message_float(&icl_adaptive_moment_x, payload);
+	pack_debug_debug_message_float(&icl_moment_x, payload);
 
 
 	pack_debug_debug_message_float(&time_now, payload);
