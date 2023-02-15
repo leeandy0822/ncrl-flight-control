@@ -137,17 +137,17 @@ bool height_ctrl_only = false;
 
 /* Force ICL and Adaptive gain*/
 ICL_data force_ICL;
-float Gamma_m_gain = 0.1f;
-float C1_gain = 0.1f;
-float k_cl_m_gain = 7.5f;
+float Gamma_m_gain = 0.03f;
+float C1_gain = 0.02f;
+float k_cl_m_gain = 0.000001f;
 float mat_m_matrix[N_m] = {0.0f};
 float mat_m_sum = 0.0f;
 
 /* Moment ICL and Adaptive gain*/
 int ICL_sigma_index = 0;
 ICL_sigma sigma_array[ICL_N];
-float adaptive_gamma[8] = {0.00000085, 0.00000085, 0.00000085, 0.00000085, 0.00000085, 0.00000085, 0.00000085, 0.00000085};
-float c2 = 10; // ICL const
+float adaptive_gamma[8] = {0.0000085, 0.0000085, 0.0000085, 0.0000085, 0.0000085, 0.0000085, 0.0000085, 0.0000085};
+float c2 = 1; 
 float output_force_last = 0;
 float k_icl[8] = {7500, 7500, 7500, 7500, 7500, 7500, 7500, 7500}; // ICL 5
 float adaptive_gamma_k_icl[8];
@@ -230,8 +230,9 @@ void force_ff_ctrl_use_adaptive_ICL(float *accel_ff, float *force_ff, float *pos
 	}
 
 	/* prepare components of theta_m_hat_dot */
+	
 	mat_data(theta_m_hat_dot_adaptive)[0] = -Gamma_m_gain * mat_data(Ymt_evC1ex)[0];
-	mat_data(theta_m_hat_dot_ICL)[0] = k_cl_m_gain * Gamma_m_gain * mat_m_sum;
+	mat_data(theta_m_hat_dot_ICL)[0] = -k_cl_m_gain * Gamma_m_gain * mat_m_sum;
 
 	/* theta_m_dot = adaptive law + ICL update law */
 	mat_data(theta_m_hat_dot)[0] = mat_data(theta_m_hat_dot_adaptive)[0] + mat_data(theta_m_hat_dot_ICL)[0];
@@ -377,7 +378,7 @@ void geometry_ctrl_init(void)
 	// Moment
 	MAT_INIT(theta, 8, 1);
 	mat_data(theta)[0] = 0.0f;
-	mat_data(theta)[1] = 0.0f;
+	mat_data(theta)[1] = 0.005f;
 	mat_data(theta)[2] = 0.015f;
 	mat_data(theta)[3] = 0.015f;
 	mat_data(theta)[4] = 0.03f;
@@ -668,7 +669,7 @@ void geometry_tracking_ctrl(euler_t *rc, float *attitude_q, float *gyro, float *
 	/* with mass of uav known */
 	force_ff_ned[0] = uav_mass * accel_ff_ned[0];
 	force_ff_ned[1] = uav_mass * accel_ff_ned[1];
-	force_ff_ned[2] = uav_mass * accel_ff_ned[2];
+	force_ff_ned[2] = uav_mass * (accel_ff_ned[2] - 9.81);
 
 #elif (SELECT_FORCE_CONTROLLER_ESTIMATOR == FORCE_ADAPTIVE)
 
@@ -681,8 +682,7 @@ void geometry_tracking_ctrl(euler_t *rc, float *attitude_q, float *gyro, float *
 	mat_data(kxex_kvev_mge3_mxd_dot_dot)[1] = -kpy * pos_error[1] - kvy * vel_error[1] +
 											  force_ff_ned[1] - tracking_error_integral[1];
 	mat_data(kxex_kvev_mge3_mxd_dot_dot)[2] = -kpz * pos_error[2] - kvz * vel_error[2] +
-											  force_ff_ned[2] - tracking_error_integral[2] -
-											  uav_mass * 9.81;
+											  force_ff_ned[2] - tracking_error_integral[2];
 
 	/* calculate the denominator of b3d */
 	float b3d_denominator; // caution: this term should not be 0
@@ -949,7 +949,6 @@ void geometry_tracking_ctrl(euler_t *rc, float *attitude_q, float *gyro, float *
 	mat_data(Y_CL)[2 * 8 + 7] = 0;
 
 	// MAT_ADD(&Y_CLdt ,&W_dot_Matrix ,&sigma_array[ICL_sigma_index].Y_CL );
-	// MAT_SCALE(&M_last5, dt*5, &sigma_array[ICL_sigma_index].Mb);
 	sigma_array[ICL_sigma_index].Y_CL = Y_CL;
 	sigma_array[ICL_sigma_index].Mb = M_last;
 	ICL_sigma_index++;
@@ -1338,24 +1337,44 @@ void send_uav_dynamics_debug(debug_msg_t *payload)
 
 void send_controller_estimation_adaptive_debug(debug_msg_t *payload)
 {
-	float roll_error = rad_to_deg(mat_data(eR)[0]);
-	float pitch_error = rad_to_deg(mat_data(eR)[1]);
-	float yaw_error = rad_to_deg(mat_data(eR)[2]);
+	// float roll_error = rad_to_deg(mat_data(eR)[0]);
+	// float pitch_error = rad_to_deg(mat_data(eR)[1]);
+	// float yaw_error = rad_to_deg(mat_data(eR)[2]);
 	
+	float force_x = mat_data(curr_force)[0];
+	float force_y = mat_data(curr_force)[1];
+	float force_z = mat_data(curr_force)[2];
+
 	float mass = mat_data(theta_m_hat)[0];
+	float adaptive_hat_dot = mat_data(theta_m_hat_dot_adaptive)[0];
+	float cl_hat_dot = mat_data(theta_m_hat_dot_ICL)[0];
+
 	float cogX = mat_data(theta)[0];
 	float cogY = mat_data(theta)[1];
-	
+	float moment_x = mat_data(M_last)[0];
+	float moment_y = mat_data(M_last)[0];
+	float moment_z = mat_data(M_last)[0];
+	float moment_adaptive = mat_data(theta_hat_dot)[0];
+
 	float time_now = get_sys_time_s();
 
 	pack_debug_debug_message_header(payload, MESSAGE_ID_ADAPTIVE_THETA);
-	pack_debug_debug_message_float(&roll_error, payload);
-	pack_debug_debug_message_float(&pitch_error, payload);
-	pack_debug_debug_message_float(&yaw_error, payload);
+	pack_debug_debug_message_float(&force_x, payload);
+	pack_debug_debug_message_float(&force_y, payload);
+	pack_debug_debug_message_float(&force_z, payload);
+
+	pack_debug_debug_message_float(&moment_x, payload);
+	pack_debug_debug_message_float(&moment_y, payload);
+	pack_debug_debug_message_float(&moment_z, payload);
 
 	pack_debug_debug_message_float(&mass, payload);
+	pack_debug_debug_message_float(&adaptive_hat_dot, payload);
+	pack_debug_debug_message_float(&cl_hat_dot, payload);
+
 	pack_debug_debug_message_float(&cogX, payload);
 	pack_debug_debug_message_float(&cogY, payload);
+	pack_debug_debug_message_float(&moment_adaptive, payload);
+
 
 	pack_debug_debug_message_float(&time_now, payload);
 }
