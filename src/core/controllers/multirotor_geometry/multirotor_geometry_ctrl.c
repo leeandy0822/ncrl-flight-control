@@ -135,9 +135,9 @@ bool height_ctrl_only = false;
 
 /* Force ICL and Adaptive gain*/
 ICL_data force_ICL;
-float Gamma_m_gain = 0.03f;
-float C1_gain = 0.02f;
-float k_cl_m_gain = 0.000001f;
+float Gamma_m_gain = 0.025f;
+float C1_gain = 0.01f;
+float k_cl_m_gain = 0.000005f;
 float mat_m_matrix[N_m] = {0.0f};
 float mat_m_sum = 0.0f;
 
@@ -376,8 +376,8 @@ void geometry_ctrl_init(void)
 
 	// Moment
 	MAT_INIT(theta, 8, 1);
-	mat_data(theta)[0] = 0.005f;
-	mat_data(theta)[1] = 0.0f;
+	mat_data(theta)[0] = 0.0f;
+	mat_data(theta)[1] = 0.005f;
 	mat_data(theta)[2] = 0.015f;
 	mat_data(theta)[3] = 0.015f;
 	mat_data(theta)[4] = 0.03f;
@@ -604,25 +604,6 @@ void geometry_manual_ctrl(euler_t *rc, float *attitude_q, float *gyro, float *ou
 	mat_data(inertia_effect)[0] = mat_data(WJW)[0];
 	mat_data(inertia_effect)[1] = mat_data(WJW)[1];
 	mat_data(inertia_effect)[2] = mat_data(WJW)[2];
-
-#if 0 /* inertia feedfoward term for motion planning (trajectory is known) */
-	/* calculate inertia effect (trajectory is defined, Wd and Wd_dot are not zero) */
-	//W * R^T * Rd * Wd
-	hat_map_3x3(mat_data(W), mat_data(W_hat));
-	MAT_MULT(&W_hat, &Rt, &WRt);
-	MAT_MULT(&WRt, &Rd, &WRtRd);
-	MAT_MULT(&WRtRd, &Wd, &WRtRdWd);
-	//R^T * Rd * Wd_dot
-	//MAT_MULT(&Rt, &Rd, &RtRd); //the term is duplicated
-	MAT_MULT(&RtRd, &Wd_dot, &RtRdWddot);
-	//(W * R^T * Rd * Wd) - (R^T * Rd * Wd_dot)
-	MAT_SUB(&WRtRdWd, &RtRdWddot, &WRtRdWd_RtRdWddot);
-	//J*[(W * R^T * Rd * Wd) - (R^T * Rd * Wd_dot)]
-	MAT_MULT(&J, &WRtRdWd_RtRdWddot, &J_WRtRdWd_RtRdWddot);
-	//inertia effect = (W x JW) - J*[(W * R^T * Rd * Wd) - (R^T * Rd * Wd_dot)]
-	MAT_SUB(&WJW, &J_WRtRdWd_RtRdWddot, &inertia_effect);
-
-#endif
 
 	/* control input M1, M2, M3 */
 	output_moments[0] = -krx * mat_data(eR)[0] - kwx * mat_data(eW)[0] + mat_data(inertia_effect)[0];
@@ -1200,6 +1181,7 @@ void multirotor_geometry_control(radio_t *rc)
 		geometry_manual_ctrl(&attitude_cmd, attitude_q, gyro, control_moments,
 							 heading_available);
 
+
 		/* generate total thrust for quadrotor (open-loop) */
 		control_force = 4.0f * convert_motor_cmd_to_thrust(rc->throttle * 0.01 /* [%] */);
 
@@ -1340,43 +1322,76 @@ void send_controller_estimation_adaptive_debug(debug_msg_t *payload)
 	// float pitch_error = rad_to_deg(mat_data(eR)[1]);
 	// float yaw_error = rad_to_deg(mat_data(eR)[2]);
 	
-	float force_x = mat_data(curr_force)[0];
-	float force_y = mat_data(curr_force)[1];
-	float force_z = mat_data(curr_force)[2];
+	float ex_x = pos_error[0];
+	float ex_y = pos_error[1];
+	float ex_z = pos_error[2];
+
+	float ev_x = vel_error[0];
+	float ev_y = vel_error[1];
+	float ev_z = vel_error[2];
+
+	float roll_error = rad_to_deg(mat_data(eR)[0]);
+	float pitch_error = rad_to_deg(mat_data(eR)[1]);
+	float yaw_error = rad_to_deg(mat_data(eR)[2]);
+
+	float wx_error = rad_to_deg(mat_data(eW)[0]);
+	float wy_error = rad_to_deg(mat_data(eW)[1]);
+	float wz_error = rad_to_deg(mat_data(eW)[2]);
 
 	float mass = mat_data(theta_m_hat)[0];
-	float adaptive_hat_dot = mat_data(theta_m_hat_dot_adaptive)[0];
-	float cl_hat_dot = mat_data(theta_m_hat_dot_ICL)[0];
-
 	float cogX = mat_data(theta)[0];
 	float cogY = mat_data(theta)[1];
-	float moment_x = mat_data(M_last)[0];
-	float moment_y = mat_data(M_last)[0];
-	float moment_z = mat_data(M_last)[0];
-	float moment_adaptive_x = mat_data(theta_hat_dot)[0];
-	float icl_adaptive_moment_x = mat_data(adaptive_theta_hat_dot)[0];
-	float icl_moment_x = mat_data(ICL_theta_hat_dot)[0];
+
+
+	// float force_x = mat_data(curr_force)[0];
+	// float force_y = mat_data(curr_force)[1];
+	// float force_z = mat_data(curr_force)[2];
+	// float adaptive_hat_dot = mat_data(theta_m_hat_dot_adaptive)[0];
+	// float cl_hat_dot = mat_data(theta_m_hat_dot_ICL)[0];
+	// float moment_x = mat_data(M_last)[0];
+	// float moment_y = mat_data(M_last)[0];
+	// float moment_z = mat_data(M_last)[0];
+	// float moment_adaptive_x = mat_data(theta_hat_dot)[0];
+	// float icl_adaptive_moment_x = mat_data(adaptive_theta_hat_dot)[0];
+	// float icl_moment_x = mat_data(ICL_theta_hat_dot)[0];
 
 	float time_now = get_sys_time_s();
 
 	pack_debug_debug_message_header(payload, MESSAGE_ID_ADAPTIVE_THETA);
-	pack_debug_debug_message_float(&force_x, payload);
-	pack_debug_debug_message_float(&force_y, payload);
-	pack_debug_debug_message_float(&force_z, payload);
 
-	pack_debug_debug_message_float(&moment_x, payload);
-	pack_debug_debug_message_float(&moment_y, payload);
-	pack_debug_debug_message_float(&moment_z, payload);
+	pack_debug_debug_message_float(&ex_x, payload);
+	pack_debug_debug_message_float(&ex_y, payload);
+	pack_debug_debug_message_float(&ex_z, payload);
+
+	pack_debug_debug_message_float(&ev_x, payload);
+	pack_debug_debug_message_float(&ev_y, payload);
+	pack_debug_debug_message_float(&ev_z, payload);
+
+	pack_debug_debug_message_float(&roll_error, payload);
+	pack_debug_debug_message_float(&pitch_error, payload);
+	pack_debug_debug_message_float(&yaw_error, payload);
+
+	pack_debug_debug_message_float(&wx_error, payload);
+	pack_debug_debug_message_float(&wy_error, payload);
+	pack_debug_debug_message_float(&wz_error, payload);
+
+	// pack_debug_debug_message_float(&force_x, payload);
+	// pack_debug_debug_message_float(&force_y, payload);
+	// pack_debug_debug_message_float(&force_z, payload);
+
+	// pack_debug_debug_message_float(&moment_x, payload);
+	// pack_debug_debug_message_float(&moment_y, payload);
+	// pack_debug_debug_message_float(&moment_z, payload);
 
 	pack_debug_debug_message_float(&mass, payload);
-	pack_debug_debug_message_float(&adaptive_hat_dot, payload);
-	pack_debug_debug_message_float(&cl_hat_dot, payload);
+	// pack_debug_debug_message_float(&adaptive_hat_dot, payload);
+	// pack_debug_debug_message_float(&cl_hat_dot, payload);
 
 	pack_debug_debug_message_float(&cogX, payload);
 	pack_debug_debug_message_float(&cogY, payload);
-	pack_debug_debug_message_float(&moment_adaptive_x, payload);
-	pack_debug_debug_message_float(&icl_adaptive_moment_x, payload);
-	pack_debug_debug_message_float(&icl_moment_x, payload);
+	// pack_debug_debug_message_float(&moment_adaptive_x, payload);
+	// pack_debug_debug_message_float(&icl_adaptive_moment_x, payload);
+	// pack_debug_debug_message_float(&icl_moment_x, payload);
 
 
 	pack_debug_debug_message_float(&time_now, payload);
