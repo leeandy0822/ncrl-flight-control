@@ -7,7 +7,7 @@
 /* uav mode*/
 #define TRANSPORTATION 1
 #define SINGLE_UAV 2
-#define SELECT_UAV_MISSION SINGLE_UAV
+#define SELECT_UAV_MISSION TRANSPORTATION
 
 /*Controller type*/
 

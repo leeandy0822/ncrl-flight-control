@@ -324,27 +324,27 @@ void geometry_ctrl_init(void)
 	//      0         0         0    0.2500
 
 	mat_data(DIS_M)[4 * 0 + 0] = 0.25f;
-	mat_data(DIS_M)[4 * 0 + 1] = -0.0926f;
+	mat_data(DIS_M)[4 * 0 + 2] = -0.0926f;
 	mat_data(DIS_M)[4 * 1 + 1] = 0.2315f;
-	mat_data(DIS_M)[4 * 2 + 2] = 0.2222f;
+	mat_data(DIS_M)[4 * 2 + 2] = 0.2315f;
 	mat_data(DIS_M)[4 * 3 + 3] = 0.2500f;
 
 	mat_data(DIS_M)[4 * 4 + 0] = 0.25f;
-	mat_data(DIS_M)[4 * 4 + 1] = 0.0926f;
+	mat_data(DIS_M)[4 * 4 + 2] = 0.0926f;
 	mat_data(DIS_M)[4 * 5 + 1] = 0.2315f;
-	mat_data(DIS_M)[4 * 6 + 2] = 0.2222f;
+	mat_data(DIS_M)[4 * 6 + 2] = 0.2315f;
 	mat_data(DIS_M)[4 * 7 + 3] = 0.2500f;
 
 	mat_data(DIS_M)[4 * 8 + 0] = 0.25f;
-	mat_data(DIS_M)[4 * 8 + 2] = 0.1111f;
-	mat_data(DIS_M)[4 * 9 + 1] = 0.2315f;
-	mat_data(DIS_M)[4 * 10 + 2] = 0.2222f;
+	mat_data(DIS_M)[4 * 8 + 1] = 0.0926f;
+	mat_data(DIS_M)[4 * 9 + 2] = 0.2315f;
+	mat_data(DIS_M)[4 * 10 + 1] = -0.2315f;
 	mat_data(DIS_M)[4 * 11 + 3] = 0.2500f;
 
 	mat_data(DIS_M)[4 * 12 + 0] = 0.25f;
-	mat_data(DIS_M)[4 * 12 + 2] = -0.1111f;
-	mat_data(DIS_M)[4 * 13 + 1] = 0.2315f;
-	mat_data(DIS_M)[4 * 14 + 2] = 0.2222f;
+	mat_data(DIS_M)[4 * 12 + 1] = -0.0926f;
+	mat_data(DIS_M)[4 * 13 + 2] = -0.2315f;
+	mat_data(DIS_M)[4 * 14 + 1] = 0.2315f;
 	mat_data(DIS_M)[4 * 15 + 3] = 0.2500f;
 
 	// *************************
