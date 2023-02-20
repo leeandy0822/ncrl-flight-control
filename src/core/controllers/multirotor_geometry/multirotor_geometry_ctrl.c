@@ -306,15 +306,15 @@ void geometry_ctrl_init(void)
 
 
 	mat_data(DIS_M)[4 * 0 + 0] = 0.5f;
-	mat_data(DIS_M)[4 * 0 + 2] = 0.0962f;
+	mat_data(DIS_M)[4 * 0 + 2] = 0.1278f;
 	mat_data(DIS_M)[4 * 1 + 1] = 0.5f;
-	mat_data(DIS_M)[4 * 2 + 2] = 0.4808f;
+	mat_data(DIS_M)[4 * 2 + 2] = 0.4648f;
 	mat_data(DIS_M)[4 * 3 + 3] = 0.5f;
 
 	mat_data(DIS_M)[4 * 4 + 0] = 0.5f;
-	mat_data(DIS_M)[4 * 4 + 2] = -0.0926f;
+	mat_data(DIS_M)[4 * 4 + 2] = -0.1278f;
 	mat_data(DIS_M)[4 * 5 + 1] = 0.5f;
-	mat_data(DIS_M)[4 * 6 + 2] = 0.4808f;
+	mat_data(DIS_M)[4 * 6 + 2] = 0.4648f;
 	mat_data(DIS_M)[4 * 7 + 3] = 0.5f;
 
 

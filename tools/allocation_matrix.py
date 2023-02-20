@@ -12,4 +12,7 @@ A = np.array([[1, 0, 0, 0, 1, 0, 0, 0],
 
 U = np.linalg.inv(H) @ A.T @ np.linalg.inv(A @ np.linalg.inv(H) @ A.T)
 
+
+F = np.array([10,1,0,0])
 print(U)
+print(F.T)

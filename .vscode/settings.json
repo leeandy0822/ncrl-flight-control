@@ -12,5 +12,9 @@
         "memory": "c",
         "new": "c",
         "functional": "c"
-    }
+    },
+    "python.analysis.extraPaths": [
+        "/home/leeandy/catkin_ws/devel/lib/python2.7/dist-packages",
+        "/opt/ros/melodic/lib/python2.7/dist-packages"
+    ]
 }
