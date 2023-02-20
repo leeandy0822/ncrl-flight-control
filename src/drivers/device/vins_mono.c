@@ -246,15 +246,15 @@ void assign_vins_mono_command_msg(float *dis_command){
 	vins_mono.dis_command2[2] = dis_command[6];
 	vins_mono.dis_command2[3] = dis_command[7];
 
-	vins_mono.dis_command3[0] = dis_command[8];
-	vins_mono.dis_command3[1] = dis_command[9];
-	vins_mono.dis_command3[2] = dis_command[10];
-	vins_mono.dis_command3[3] = dis_command[11];
+	vins_mono.dis_command3[0] =  0.0f;
+	vins_mono.dis_command3[1] =  0.0f;
+	vins_mono.dis_command3[2] =  0.0f;
+	vins_mono.dis_command3[3] =  0.0f;
 
-	vins_mono.dis_command4[0] = dis_command[12];
-	vins_mono.dis_command4[1] = dis_command[13];
-	vins_mono.dis_command4[2] = dis_command[14];
-	vins_mono.dis_command4[3] = dis_command[15];
+	vins_mono.dis_command4[0] =  0.0f;
+	vins_mono.dis_command4[1] =  0.0f;
+	vins_mono.dis_command4[2] =  0.0f;
+	vins_mono.dis_command4[3] =  0.0f;
 
 }
 

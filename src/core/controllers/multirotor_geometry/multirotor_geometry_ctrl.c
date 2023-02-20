@@ -70,9 +70,9 @@ MAT_ALLOC(b2d, 3, 1);
 MAT_ALLOC(b3d, 3, 1);
 
 /* Allocation*/
-MAT_ALLOC(DIS_M, 16, 4);
+MAT_ALLOC(DIS_M, 8, 4);
 MAT_ALLOC(CONTROL_OUTPUT, 4, 1);
-MAT_ALLOC(DIS_OUTPUT, 16, 1);
+MAT_ALLOC(DIS_OUTPUT, 8, 1);
 
 // Force controller 
 MAT_ALLOC(Y_m, 3, 1);
@@ -157,7 +157,6 @@ void ICL_matrix_init(void)
 	force_ICL.index = 0;
 	force_ICL.isfull = false;
 	force_ICL.N = N_m;
-
 }
 
 void force_ff_ctrl_use_adaptive_ICL(float *accel_ff, float *force_ff, float *pos_err, float *vel_err, float *curr_vel, float *acc)
@@ -245,13 +244,13 @@ void force_ff_ctrl_use_adaptive_ICL(float *accel_ff, float *force_ff, float *pos
 	force_ff[2] = mat_data(Y_m)[2] * mat_data(theta_m_hat)[0];
 	
 	if (SELECT_UAV_MISSION == TRANSPORTATION){
-		bound_float(&force_ff[0], 12, -12);
-		bound_float(&force_ff[1], 12, -12);
-		bound_float(&force_ff[2], 60, -60);
+		bound_float(&force_ff[0], 6, -6);
+		bound_float(&force_ff[1], 6, -6);
+		bound_float(&force_ff[2], 26, -26);
 	}else{
 		bound_float(&force_ff[0], 2.8, -2.8);
 		bound_float(&force_ff[1], 2.8, -2.8);
-		bound_float(&force_ff[2], 15, -15);
+		bound_float(&force_ff[2], 12, -12);
 	}
 }
 
@@ -301,51 +300,23 @@ void geometry_ctrl_init(void)
 	MAT_INIT(b2d, 3, 1);
 	MAT_INIT(b3d, 3, 1);
 
-	MAT_INIT(DIS_M, 16, 4);
+	MAT_INIT(DIS_M, 8, 4);
 	MAT_INIT(CONTROL_OUTPUT, 4, 1);
-	MAT_INIT(DIS_OUTPUT, 16, 1);
+	MAT_INIT(DIS_OUTPUT, 8, 1);
 
-	// weight 1, 1, 1, 1  uav1 (0,-0.4) uav2(0,0.4) uav3(-0.5, 0) uav4(0.5, 0)
-	// 0.2500   -0.0926         0         0
-	//      0    0.2315         0         0
-	//      0         0    0.2222         0
-	//      0         0         0    0.2500
-	// 0.2500    0.0926         0         0
-	//      0    0.2315         0         0
-	//      0         0    0.2222         0
-	//      0         0         0    0.2500
-	// 0.2500         0    0.1111         0
-	//      0    0.2315         0         0
-	//      0         0    0.2222         0
-	//      0         0         0    0.2500
-	// 0.2500         0   -0.1111         0
-	//      0    0.2315         0         0
-	//      0         0    0.2222         0
-	//      0         0         0    0.2500
 
-	mat_data(DIS_M)[4 * 0 + 0] = 0.25f;
-	mat_data(DIS_M)[4 * 0 + 2] = -0.0926f;
-	mat_data(DIS_M)[4 * 1 + 1] = 0.2315f;
-	mat_data(DIS_M)[4 * 2 + 2] = 0.2315f;
-	mat_data(DIS_M)[4 * 3 + 3] = 0.2500f;
+	mat_data(DIS_M)[4 * 0 + 0] = 0.5f;
+	mat_data(DIS_M)[4 * 0 + 2] = 0.0962f;
+	mat_data(DIS_M)[4 * 1 + 1] = 0.5f;
+	mat_data(DIS_M)[4 * 2 + 2] = 0.4808f;
+	mat_data(DIS_M)[4 * 3 + 3] = 0.5f;
 
-	mat_data(DIS_M)[4 * 4 + 0] = 0.25f;
-	mat_data(DIS_M)[4 * 4 + 2] = 0.0926f;
-	mat_data(DIS_M)[4 * 5 + 1] = 0.2315f;
-	mat_data(DIS_M)[4 * 6 + 2] = 0.2315f;
-	mat_data(DIS_M)[4 * 7 + 3] = 0.2500f;
+	mat_data(DIS_M)[4 * 4 + 0] = 0.5f;
+	mat_data(DIS_M)[4 * 4 + 2] = -0.0926f;
+	mat_data(DIS_M)[4 * 5 + 1] = 0.5f;
+	mat_data(DIS_M)[4 * 6 + 2] = 0.4808f;
+	mat_data(DIS_M)[4 * 7 + 3] = 0.5f;
 
-	mat_data(DIS_M)[4 * 8 + 0] = 0.25f;
-	mat_data(DIS_M)[4 * 8 + 1] = 0.0926f;
-	mat_data(DIS_M)[4 * 9 + 2] = 0.2315f;
-	mat_data(DIS_M)[4 * 10 + 1] = -0.2315f;
-	mat_data(DIS_M)[4 * 11 + 3] = 0.2500f;
-
-	mat_data(DIS_M)[4 * 12 + 0] = 0.25f;
-	mat_data(DIS_M)[4 * 12 + 1] = -0.0926f;
-	mat_data(DIS_M)[4 * 13 + 2] = -0.2315f;
-	mat_data(DIS_M)[4 * 14 + 1] = 0.2315f;
-	mat_data(DIS_M)[4 * 15 + 3] = 0.2500f;
 
 	// *************************
 	// adaptive & ICL parameters
@@ -1036,7 +1007,7 @@ void multi_uav_geometry_ctrl_thrust_allocation(float *dis_control_outputs, float
 	mat_data(CONTROL_OUTPUT)[2] = moment[1];
 	mat_data(CONTROL_OUTPUT)[3] = moment[2];
 	MAT_MULT(&DIS_M, &CONTROL_OUTPUT, &DIS_OUTPUT);
-	for (int i = 0; i < 16; i++)
+	for (int i = 0; i < 8; i++)
 	{
 		dis_control_outputs[i] = mat_data(DIS_OUTPUT)[i];
 	}
@@ -1188,7 +1159,7 @@ void multirotor_geometry_control(radio_t *rc)
 		if (SELECT_UAV_MISSION == TRANSPORTATION)
 		{
 			/* four uav*/
-			control_force = 4 * control_force;
+			control_force = 2 * control_force;
 		}
 	}
 
