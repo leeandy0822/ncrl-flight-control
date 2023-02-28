@@ -7,7 +7,6 @@
 #include "matrix.h"
 
 
-
 /*Force*/
 #define N_m 10
 typedef struct {
