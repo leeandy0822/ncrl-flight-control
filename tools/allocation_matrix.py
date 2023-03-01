@@ -1,9 +1,9 @@
 import numpy as np
 
-weight = np.array([0.3, 0.3, 1, 0.3])
+weight = np.array([0.33, 0.33, 1, 0.33])
 H = np.diag(np.concatenate((weight, weight)))
-uav1_pos = np.array([0.3, 0])
-uav2_pos = np.array([-0.3, 0])
+uav1_pos = np.array([0.17, 0])
+uav2_pos = np.array([-0.17, 0])
 
 A = np.array([[1, 0, 0, 0, 1, 0, 0, 0],
               [-uav1_pos[1], 1, 0, 0, -uav2_pos[1], 1, 0, 0],

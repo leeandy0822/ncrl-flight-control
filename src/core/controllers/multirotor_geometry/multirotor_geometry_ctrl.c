@@ -144,8 +144,8 @@ float mat_m_sum = 0.0f;
 /* Moment ICL and Adaptive gain*/
 int ICL_sigma_index = 0;
 ICL_sigma sigma_array[ICL_N];
-float adaptive_gamma[8] = {0.0000008, 0.0000008, 0.000001, 0.000001, 0.000001, 0.000001, 0.000001, 0.000001};
-float c2 = 1; 
+float adaptive_gamma[8] = {0.0000005, 0.0000005, 0.000006, 0.000006, 0.000006, 0.000006, 0.000006, 0.000006};
+float c2 = 0.5; 
 float output_force_last = 0;
 float k_icl[8] = {0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01}; 
 float adaptive_gamma_k_icl[8];
@@ -306,15 +306,15 @@ void geometry_ctrl_init(void)
 
 
 	mat_data(DIS_M)[4 * 0 + 0] = 0.5f;
-	mat_data(DIS_M)[4 * 0 + 2] = 0.3846f;
+	mat_data(DIS_M)[4 * 0 + 2] = 0.23683477f;
 	mat_data(DIS_M)[4 * 1 + 1] = 0.5f;
-	mat_data(DIS_M)[4 * 2 + 2] = 0.3846f;
+	mat_data(DIS_M)[4 * 2 + 2] = 0.45973809f;
 	mat_data(DIS_M)[4 * 3 + 3] = 0.5f;
 
 	mat_data(DIS_M)[4 * 4 + 0] = 0.5f;
-	mat_data(DIS_M)[4 * 4 + 2] = -0.3846f;
+	mat_data(DIS_M)[4 * 4 + 2] = -0.23683477f;
 	mat_data(DIS_M)[4 * 5 + 1] = 0.5f;
-	mat_data(DIS_M)[4 * 6 + 2] = 0.3846f;
+	mat_data(DIS_M)[4 * 6 + 2] = 0.45973809f;
 	mat_data(DIS_M)[4 * 7 + 3] = 0.5f;
 
 
