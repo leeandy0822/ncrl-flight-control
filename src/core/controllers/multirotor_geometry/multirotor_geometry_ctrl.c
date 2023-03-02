@@ -1482,8 +1482,8 @@ void send_controller_estimation_adaptive_debug(debug_msg_t *payload)
 	// float adaptive_hat_dot = mat_data(theta_m_hat_dot_adaptive)[0];
 	// float cl_hat_dot = mat_data(theta_m_hat_dot_ICL)[0];
 	float moment_x = mat_data(M_last)[0];
-	float moment_y = mat_data(M_last)[0];
-	float moment_z = mat_data(M_last)[0];
+	float moment_y = mat_data(M_last)[1];
+	float moment_z = mat_data(M_last)[2];
 	// float moment_adaptive_x = mat_data(theta_hat_dot)[0];
 	// float icl_adaptive_moment_x = mat_data(adaptive_theta_hat_dot)[0];
 	// float icl_moment_x = mat_data(ICL_theta_hat_dot)[0];
