@@ -39,7 +39,7 @@
 #endif
 
 
-#define MOTOR_TO_CG_LENGTH length						 //[cm]
+#define MOTOR_TO_CG_LENGTH 16.25						 //[cm]
 #define MOTOR_TO_CG_LENGTH_M (MOTOR_TO_CG_LENGTH * 0.01) //[m]
 #define COEFFICIENT_YAW 1.0f
 
@@ -252,13 +252,13 @@ void force_ff_ctrl_use_adaptive_ICL(float *accel_ff, float *force_ff, float *pos
 	force_ff[2] = mat_data(Y_m)[2] * mat_data(theta_m_hat)[0];
 	
 	if (SELECT_UAV_MISSION == TRANSPORTATION){
-		bound_float(&force_ff[0], 6, -6);
-		bound_float(&force_ff[1], 6, -6);
-		bound_float(&force_ff[2], 26, -26);
+		bound_float(&force_ff[0], 10, -10);
+		bound_float(&force_ff[1], 10, -10);
+		bound_float(&force_ff[2], 40, -40);
 	}else{
 		bound_float(&force_ff[0], 2.8, -2.8);
 		bound_float(&force_ff[1], 2.8, -2.8);
-		bound_float(&force_ff[2], 12, -12);
+		bound_float(&force_ff[2], 18, -18);
 	}
 }
 
@@ -314,15 +314,15 @@ void geometry_ctrl_init(void)
 
 
 	mat_data(DIS_M)[4 * 0 + 0] = 0.5f;
-	mat_data(DIS_M)[4 * 0 + 2] = 0.23683477f;
-	mat_data(DIS_M)[4 * 1 + 1] = 0.5f;
-	mat_data(DIS_M)[4 * 2 + 2] = 0.45973809f;
+	mat_data(DIS_M)[4 * 0 + 1] = 0.26831785f;
+	mat_data(DIS_M)[4 * 1 + 1] = 0.4127967f;
+	mat_data(DIS_M)[4 * 2 + 2] = 0.5f;
 	mat_data(DIS_M)[4 * 3 + 3] = 0.5f;
 
 	mat_data(DIS_M)[4 * 4 + 0] = 0.5f;
-	mat_data(DIS_M)[4 * 4 + 2] = -0.23683477f;
-	mat_data(DIS_M)[4 * 5 + 1] = 0.5f;
-	mat_data(DIS_M)[4 * 6 + 2] = 0.45973809f;
+	mat_data(DIS_M)[4 * 4 + 1] = -0.26831785f;
+	mat_data(DIS_M)[4 * 5 + 1] = 0.4127967f;
+	mat_data(DIS_M)[4 * 6 + 2] = 0.5f;
 	mat_data(DIS_M)[4 * 7 + 3] = 0.5f;
 
 
@@ -350,7 +350,7 @@ void geometry_ctrl_init(void)
 	if (SELECT_UAV_MISSION == SINGLE_UAV){
 		mat_data(theta_m_hat)[0] = 0.5f;
 	}else{
-		mat_data(theta_m_hat)[0] = 1.6f;
+		mat_data(theta_m_hat)[0] = 2.5f;
 	}
 
 	// Moment
@@ -358,9 +358,8 @@ void geometry_ctrl_init(void)
 	
 	mat_data(theta)[0] = 0.0f;
 	mat_data(theta)[1] = 0.0f;
-
-	mat_data(theta)[2] = 0.5f;
-	mat_data(theta)[3] = 1.3f;
+	mat_data(theta)[2] = 0.4f;
+	mat_data(theta)[3] = 0.02f;
 	mat_data(theta)[4] = 0.8f;
 	mat_data(theta)[5] = 0.0f;
 	mat_data(theta)[6] = 0.0f;
@@ -1166,6 +1165,12 @@ void multirotor_geometry_control(radio_t *rc)
 		/* generate total thrust for quadrotor (open-loop) */
 		control_force = 4.0f * convert_motor_cmd_to_thrust(rc->throttle * 0.01 /* [%] */);
 
+		if (SELECT_UAV_MISSION == TRANSPORTATION)
+		{
+			/* four uav*/
+			control_force = 2 * control_force;
+		}
+
 		mat_data(M_last)[0] = control_moments[0];
 		mat_data(M_last)[1] = control_moments[1];
 		mat_data(M_last)[2] = control_moments[2];
@@ -1180,14 +1185,6 @@ void multirotor_geometry_control(radio_t *rc)
 		mat_data(curr_force)[0] = (control_force)*mat_data(Re3)[0];
 		mat_data(curr_force)[1] = (control_force)*mat_data(Re3)[1];
 		mat_data(curr_force)[2] = (control_force)*mat_data(Re3)[2];
-
-		if (SELECT_UAV_MISSION == TRANSPORTATION)
-		{
-			/* four uav*/
-			control_force = 2 * control_force;
-		}
-
-
 
 		/*mass estimation during manual flight*/
 		mat_data(y_m_cl)[0] = -accel_lpf[0];
