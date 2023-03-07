@@ -31,7 +31,15 @@
 #include "sensor_switching.h"
 
 #define dt 0.0025										 //[s]
-#define MOTOR_TO_CG_LENGTH 8.125f						 //[cm]
+
+#if (UAV_FRAME == F450)
+	float length = 16.25f;
+#else
+	float length = 8.125f;						 //[cm]
+#endif
+
+
+#define MOTOR_TO_CG_LENGTH length						 //[cm]
 #define MOTOR_TO_CG_LENGTH_M (MOTOR_TO_CG_LENGTH * 0.01) //[m]
 #define COEFFICIENT_YAW 1.0f
 
@@ -137,7 +145,7 @@ bool height_ctrl_only = false;
 ICL_data force_ICL;
 float Gamma_m_gain = 0.02f;
 float C1_gain = 0.01f;
-float k_cl_m_gain = 0.0000003f;
+float k_cl_m_gain = 0.000001f;
 float mat_m_matrix[N_m] = {0.0f};
 float mat_m_sum = 0.0f;
 

@@ -4,6 +4,11 @@
 /* uav info */
 #define UAV_DEFAULT_ID 1 //vaild from 1~250 according to qgroundcontrol
 
+/*uav framework*/
+#define F450 1
+#define QAV250 2
+#define UAV_FRAME F450
+
 /* uav mode*/
 #define TRANSPORTATION 1
 #define SINGLE_UAV 2
