@@ -143,19 +143,21 @@ bool height_ctrl_only = false;
 
 /* Force ICL and Adaptive gain*/
 ICL_data force_ICL;
-float Gamma_m_gain = 0.02f;
-float C1_gain = 0.01f;
-float k_cl_m_gain = 0.000001f;
+// float Gamma_m_gain = 0.2f;
+float Gamma_m_gain = 0.22;
+float C1_gain = 0.06f;
+float k_cl_m_gain = 0.000012f;
+// float k_cl_m_gain = 0.0001f;
 float mat_m_matrix[N_m] = {0.0f};
 float mat_m_sum = 0.0f;
 
 /* Moment ICL and Adaptive gain*/
 int ICL_sigma_index = 0;
 ICL_sigma sigma_array[ICL_N];
-float adaptive_gamma[8] = {0.000001, 0.000001, 0.000006, 0.000006, 0.000006, 0.000006, 0.000006, 0.000006};
+float adaptive_gamma[8] = {0.000001, 0.000001, 0.002, 0.002, 0.002, 0.002, 0.002, 0.002};
 float c2 = 0.1; 
 float output_force_last = 0;
-float k_icl[8] = {0.02, 0.02, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05}; 
+float k_icl[8] = {0.015, 0.015, 0, 0, 0, 0, 0, 0}; 
 float adaptive_gamma_k_icl[8];
 
 
@@ -236,8 +238,8 @@ void force_ff_ctrl_use_adaptive_ICL(float *accel_ff, float *force_ff, float *pos
 
 	/* prepare components of theta_m_hat_dot */
 	
-	mat_data(theta_m_hat_dot_adaptive)[0] = -0.04 * mat_data(Ymt_evC1ex)[0];
-	mat_data(theta_m_hat_dot_ICL)[0] = -k_cl_m_gain * 0.04 * mat_m_sum;
+	mat_data(theta_m_hat_dot_adaptive)[0] = - (Gamma_m_gain * mat_data(Ymt_evC1ex)[0]);
+	mat_data(theta_m_hat_dot_ICL)[0] = k_cl_m_gain  * Gamma_m_gain* mat_m_sum;
 
 	/* theta_m_dot = adaptive law + ICL update law */
 	mat_data(theta_m_hat_dot)[0] = mat_data(theta_m_hat_dot_adaptive)[0] + mat_data(theta_m_hat_dot_ICL)[0];
@@ -273,7 +275,7 @@ void geometry_ctrl_init(void)
 	navigation_manager_init();
 
 	float geo_fence_origin[3] = {0.0f, 0.0f, 0.0f};
-	autopilot_set_enu_rectangular_fence(geo_fence_origin, 2.5f, 1.3f, 3.0f);
+	autopilot_set_enu_rectangular_fence(geo_fence_origin, 3.3f, 1.3f, 3.0f);
 
 	MAT_INIT(J, 3, 3);
 	MAT_INIT(R, 3, 3);
@@ -314,14 +316,14 @@ void geometry_ctrl_init(void)
 
 
 	mat_data(DIS_M)[4 * 0 + 0] = 0.5f;
-	mat_data(DIS_M)[4 * 0 + 1] = 0.26831785f;
-	mat_data(DIS_M)[4 * 1 + 1] = 0.4127967f;
+	mat_data(DIS_M)[4 * 0 + 1] = 0.2656f;
+	mat_data(DIS_M)[4 * 1 + 1] = 0.415f;
 	mat_data(DIS_M)[4 * 2 + 2] = 0.5f;
 	mat_data(DIS_M)[4 * 3 + 3] = 0.5f;
 
 	mat_data(DIS_M)[4 * 4 + 0] = 0.5f;
-	mat_data(DIS_M)[4 * 4 + 1] = -0.26831785f;
-	mat_data(DIS_M)[4 * 5 + 1] = 0.4127967f;
+	mat_data(DIS_M)[4 * 4 + 1] = -0.2656f;
+	mat_data(DIS_M)[4 * 5 + 1] = 0.415f;
 	mat_data(DIS_M)[4 * 6 + 2] = 0.5f;
 	mat_data(DIS_M)[4 * 7 + 3] = 0.5f;
 
@@ -350,7 +352,7 @@ void geometry_ctrl_init(void)
 	if (SELECT_UAV_MISSION == SINGLE_UAV){
 		mat_data(theta_m_hat)[0] = 0.5f;
 	}else{
-		mat_data(theta_m_hat)[0] = 2.5f;
+		mat_data(theta_m_hat)[0] = 2.9f;
 	}
 
 	// Moment
@@ -1165,11 +1167,6 @@ void multirotor_geometry_control(radio_t *rc)
 		/* generate total thrust for quadrotor (open-loop) */
 		control_force = 4.0f * convert_motor_cmd_to_thrust(rc->throttle * 0.01 /* [%] */);
 
-		if (SELECT_UAV_MISSION == TRANSPORTATION)
-		{
-			/* four uav*/
-			control_force = 2 * control_force;
-		}
 
 		mat_data(M_last)[0] = control_moments[0];
 		mat_data(M_last)[1] = control_moments[1];
@@ -1185,6 +1182,13 @@ void multirotor_geometry_control(radio_t *rc)
 		mat_data(curr_force)[0] = (control_force)*mat_data(Re3)[0];
 		mat_data(curr_force)[1] = (control_force)*mat_data(Re3)[1];
 		mat_data(curr_force)[2] = (control_force)*mat_data(Re3)[2];
+
+		if (SELECT_UAV_MISSION == TRANSPORTATION)
+		{
+			/* four uav*/
+			control_force = 2 * control_force;
+		}
+
 
 		/*mass estimation during manual flight*/
 		mat_data(y_m_cl)[0] = -accel_lpf[0];
@@ -1484,14 +1488,18 @@ void send_controller_estimation_adaptive_debug(debug_msg_t *payload)
 	float force_x = mat_data(curr_force)[0];
 	float force_y = mat_data(curr_force)[1];
 	float force_z = mat_data(curr_force)[2];
-	// float adaptive_hat_dot = mat_data(theta_m_hat_dot_adaptive)[0];
-	// float cl_hat_dot = mat_data(theta_m_hat_dot_ICL)[0];
+	float adaptive_hat_dot = mat_data(theta_m_hat_dot_adaptive)[0];
+	float cl_hat_dot = mat_data(theta_m_hat_dot_ICL)[0];
 	float moment_x = mat_data(M_last)[0];
 	float moment_y = mat_data(M_last)[1];
 	float moment_z = mat_data(M_last)[2];
-	// float moment_adaptive_x = mat_data(theta_hat_dot)[0];
-	// float icl_adaptive_moment_x = mat_data(adaptive_theta_hat_dot)[0];
-	// float icl_moment_x = mat_data(ICL_theta_hat_dot)[0];
+
+	float adaptive_inertia_xx = mat_data(adaptive_theta_hat_dot)[2];
+	float adaptive_inertia_yy = mat_data(adaptive_theta_hat_dot)[3];
+	float adaptive_inertia_zz = mat_data(adaptive_theta_hat_dot)[4];
+
+	float icl_adaptive_moment_x = mat_data(adaptive_theta_hat_dot)[1];
+	float icl_moment_x = mat_data(ICL_theta_hat_dot)[1];
 
 	float time_now = get_sys_time_s();
 
@@ -1527,9 +1535,12 @@ void send_controller_estimation_adaptive_debug(debug_msg_t *payload)
 
 	pack_debug_debug_message_float(&cogX, payload);
 	pack_debug_debug_message_float(&cogY, payload);
-	// pack_debug_debug_message_float(&moment_adaptive_x, payload);
 	// pack_debug_debug_message_float(&icl_adaptive_moment_x, payload);
 	// pack_debug_debug_message_float(&icl_moment_x, payload);
+
+	// pack_debug_debug_message_float(&adaptive_inertia_xx, payload);
+	// pack_debug_debug_message_float(&adaptive_inertia_yy, payload);
+	// pack_debug_debug_message_float(&adaptive_inertia_zz, payload);
 
 
 	pack_debug_debug_message_float(&time_now, payload);

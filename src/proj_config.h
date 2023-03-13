@@ -28,7 +28,7 @@
 #define MOMENT_EMK 1 
 #define MOMENT_ADAPTIVE 2
 #define MOMENT_CL 3
-#define SELECT_MOMENT_CONTROLLER_ESTIMATOR MOMENT_ADAPTIVE
+#define SELECT_MOMENT_CONTROLLER_ESTIMATOR MOMENT_CL
 
 /* uav type */
 #define UAV_TYPE_QUADROTOR 1
@@ -66,7 +66,7 @@
 #define AHRS_MADGWICK_FILTER      2
 #define AHRS_ESKF                 3
 #define AHRS_OPTITRACK            4
-#define SELECT_AHRS AHRS_OPTITRACK
+#define SELECT_AHRS AHRS_ESKF
 
 /* ins algorithms */
 #define INS_COMPLEMENTARY_FILTER 1
