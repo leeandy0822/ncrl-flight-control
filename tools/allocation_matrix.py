@@ -1,6 +1,6 @@
 import numpy as np
 
-weight = np.array([0.5, 1, 0.5, 0.5])
+weight = np.array([0.1, 1, 0.1, 0.1])
 H = np.diag(np.concatenate((weight, weight)))
 uav1_pos = np.array([0, -0.32])
 uav2_pos = np.array([0, 0.32])
