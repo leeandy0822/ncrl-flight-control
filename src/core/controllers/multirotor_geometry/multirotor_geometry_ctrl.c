@@ -144,9 +144,9 @@ bool height_ctrl_only = false;
 /* Force ICL and Adaptive gain*/
 ICL_data force_ICL;
 // float Gamma_m_gain = 0.2f;
-float Gamma_m_gain = 0.2;
-float C1_gain = 0.1f;
-float k_cl_m_gain = 0.003f;
+float Gamma_m_gain = 0.3;
+float C1_gain = 0.05f;
+float k_cl_m_gain = 0.004f;
 // float k_cl_m_gain = 0.0001f;
 float mat_m_matrix[N_m] = {0.0f};
 float mat_m_sum = 0.0f;
@@ -157,7 +157,7 @@ ICL_sigma sigma_array[ICL_N];
 float adaptive_gamma[8] = {0.000001, 0.000001, 0.002, 0.002, 0.002, 0.002, 0.002, 0.002};
 float c2 = 0.1; 
 float output_force_last = 0;
-float k_icl[8] = {0.015, 0.015, 0, 0, 0, 0, 0, 0}; 
+float k_icl[8] = {0.02, 0.02, 0, 0, 0, 0, 0, 0}; 
 float adaptive_gamma_k_icl[8];
 
 
@@ -352,7 +352,7 @@ void geometry_ctrl_init(void)
 	if (SELECT_UAV_MISSION == SINGLE_UAV){
 		mat_data(theta_m_hat)[0] = 0.5f;
 	}else{
-		mat_data(theta_m_hat)[0] = 3.2f;
+		mat_data(theta_m_hat)[0] = 3.3f;
 	}
 
 	// Moment
@@ -1186,7 +1186,7 @@ void multirotor_geometry_control(radio_t *rc)
 		if (SELECT_UAV_MISSION == TRANSPORTATION)
 		{
 			/* four uav*/
-			control_force = 2 * control_force;
+			control_force = 2.0f * control_force;
 		}
 
 
