@@ -119,7 +119,6 @@ MAT_ALLOC(Y_CLT_Mb_Y_CLtheta, 8, 1); // Y_CLT*Mb-Y_CL*theta
 MAT_ALLOC(W, 3, 1);
 MAT_ALLOC(W_obs, 3, 1);
 
-
 float pos_error[3];
 float vel_error[3];
 float tracking_error_integral[3];
@@ -146,8 +145,8 @@ bool height_ctrl_only = false;
 ICL_data force_ICL;
 // float Gamma_m_gain = 0.2f;
 float Gamma_m_gain = 0.2;
-float C1_gain = 0.1f;
-float k_cl_m_gain = 0.003f;
+float C1_gain = 0.06f;
+float k_cl_m_gain = 0.004f;
 // float k_cl_m_gain = 0.0001f;
 float mat_m_matrix[N_m] = {0.0f};
 float mat_m_sum = 0.0f;
@@ -158,7 +157,7 @@ ICL_sigma sigma_array[ICL_N];
 float adaptive_gamma[8] = {0.000001, 0.000001, 0.002, 0.002, 0.002, 0.002, 0.002, 0.002};
 float c2 = 0.1; 
 float output_force_last = 0;
-float k_icl[8] = {0.015, 0.015, 0, 0, 0, 0, 0, 0}; 
+float k_icl[8] = {0.02, 0.02, 0, 0, 0, 0, 0, 0}; 
 float adaptive_gamma_k_icl[8];
 
 
@@ -192,6 +191,9 @@ void force_ff_ctrl_use_adaptive_ICL(float *accel_ff, float *force_ff, float *pos
 #if (SELECT_FORCE_ADAPTIVE_W_WO_ICL == FORCE_ADAPTIVE_WITHOUT_ICL)
 	// theta_m_dot = Gamma*Y_mt*ev_C1ex
 	mat_data(theta_m_hat_dot)[0] = -(Gamma_m_gain * mat_data(Ymt_evC1ex)[0]);
+	mat_data(y_m_cl)[0] = -acc[0];
+	mat_data(y_m_cl)[1] = -acc[1];
+	mat_data(y_m_cl)[2] = -acc[2] - 9.81;
 
 #elif (SELECT_FORCE_ADAPTIVE_W_WO_ICL == FORCE_ADAPTIVE_WITH_ICL)
 
@@ -263,6 +265,7 @@ void force_ff_ctrl_use_adaptive_ICL(float *accel_ff, float *force_ff, float *pos
 		bound_float(&force_ff[1], 2.8, -2.8);
 		bound_float(&force_ff[2], 18, -18);
 	}
+
 }
 
 void geometry_ctrl_init(void)
@@ -353,7 +356,7 @@ void geometry_ctrl_init(void)
 	if (SELECT_UAV_MISSION == SINGLE_UAV){
 		mat_data(theta_m_hat)[0] = 0.5f;
 	}else{
-		mat_data(theta_m_hat)[0] = 3.2f;
+		mat_data(theta_m_hat)[0] = 3.3f;
 	}
 
 	// Moment
@@ -1187,7 +1190,7 @@ void multirotor_geometry_control(radio_t *rc)
 		if (SELECT_UAV_MISSION == TRANSPORTATION)
 		{
 			/* four uav*/
-			control_force = 2 * control_force;
+			control_force = 2.0f * control_force;
 		}
 
 

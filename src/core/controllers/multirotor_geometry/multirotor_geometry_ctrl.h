@@ -8,7 +8,7 @@
 
 
 /*Force*/
-#define N_m 10
+#define N_m 5
 typedef struct {
 	bool isfull;
 	int index;
