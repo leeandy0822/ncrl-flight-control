@@ -45,6 +45,7 @@ SRC+=lib/CMSIS/DSP_Lib/Source/CommonTables/arm_common_tables.c \
 	lib/CMSIS/DSP_Lib/Source/MatrixFunctions/arm_mat_inverse_f32.c
 
 SRC+=./lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_i2c.c \
+	./lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_adc.c \
 	./lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_spi.c \
 	./lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_tim.c\
 	./lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_usart.c \

@@ -24,6 +24,8 @@
 #include "ins_sensor_sync.h"
 #include "ublox_m8n.h"
 #include "vins_mono.h"
+#include "adc.h"
+
 void f4_sw_i2c_driver_register_task(const char *task_name, configSTACK_DEPTH_TYPE stack_size,
                                     UBaseType_t priority);
 void board_init(void)
@@ -34,6 +36,8 @@ void board_init(void)
 	_crc_init();
 	px4_board_gpio_config();
 	i2c2_init();        //rgb controller
+	adc1_init();         // volatge and current sensor
+	adc2_init();
 	uart3_init(115200); //mavlink
 	uart2_init(115200); //telem
 	uart6_init(100000); //s-bus

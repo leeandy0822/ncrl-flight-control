@@ -29,6 +29,7 @@
 #include "fence.h"
 #include "board_porting.h"
 #include "sensor_switching.h"
+#include "vol_cur_sensor.h"
 
 #define dt 0.0025										 //[s]
 
@@ -1431,26 +1432,20 @@ void send_controller_estimation_adaptive_debug(debug_msg_t *payload)
 	float wx_error = rad_to_deg(mat_data(eW)[0]);
 	float wy_error = rad_to_deg(mat_data(eW)[1]);
 	float wz_error = rad_to_deg(mat_data(eW)[2]);
-
 	float mass = mat_data(theta_m_hat)[0];
 	float cogX = mat_data(theta)[0];
 	float cogY = mat_data(theta)[1];
-
-	float a_x = mat_data(y_m_cl)[0];
-	float a_y = mat_data(y_m_cl)[1];
-	float a_z = mat_data(y_m_cl)[2];
-
 	float force_x = mat_data(curr_force)[0];
 	float force_y = mat_data(curr_force)[1];
 	float force_z = mat_data(curr_force)[2];
-	float adaptive_hat_dot = mat_data(theta_m_hat_dot_adaptive)[0];
-	float cl_hat_dot = mat_data(theta_m_hat_dot_ICL)[0];
 	float moment_x = mat_data(M_last)[0];
 	float moment_y = mat_data(M_last)[1];
 	float moment_z = mat_data(M_last)[2];
 
-	float icl_adaptive_moment_x = mat_data(adaptive_theta_hat_dot)[1];
-	float icl_moment_x = mat_data(ICL_theta_hat_dot)[1];
+	float voltage = 0.0f; 
+	voltage_read(&voltage);
+	float current = 0.0f; 
+	current_read(&current);
 
 	float time_now = get_sys_time_s();
 
@@ -1481,19 +1476,10 @@ void send_controller_estimation_adaptive_debug(debug_msg_t *payload)
 	pack_debug_debug_message_float(&moment_z, payload);
 
 	pack_debug_debug_message_float(&mass, payload);
-	pack_debug_debug_message_float(&adaptive_hat_dot, payload);
-	pack_debug_debug_message_float(&cl_hat_dot, payload);
-	pack_debug_debug_message_float(&a_x, payload);
-	pack_debug_debug_message_float(&a_y, payload);
-	pack_debug_debug_message_float(&a_z, payload);
-
 	pack_debug_debug_message_float(&cogX, payload);
 	pack_debug_debug_message_float(&cogY, payload);
-	// pack_debug_debug_message_float(&icl_adaptive_moment_x, payload);
-	// pack_debug_debug_message_float(&icl_moment_x, payload);
-
-
-
+	pack_debug_debug_message_float(&voltage, payload);
+	pack_debug_debug_message_float(&current, payload);
 
 	pack_debug_debug_message_float(&time_now, payload);
 }

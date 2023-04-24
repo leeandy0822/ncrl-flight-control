@@ -14,6 +14,7 @@
 #include "ins_eskf.h"
 #include "lidar_lite.h"
 
+
 SemaphoreHandle_t debug_link_task_semphr;
 
 void debug_link_task_semaphore_handler(void)
@@ -61,6 +62,7 @@ void task_debug_link(void *param)
 		//send_optitrack_vio_debug_message(&payload);
 		//send_gnss_ins_cov_norm_debug_message(&payload);
 		send_controller_estimation_adaptive_debug(&payload);
+
 
 		send_onboard_data(payload.s, payload.len);
 		freertos_task_delay(50); //XXX: 20Hz
